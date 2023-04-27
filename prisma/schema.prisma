@@ -17,3 +17,10 @@ model User {
   session String   @unique
   hash    String
 }
+
+model Test {
+  id      Int      @id @default(autoincrement())
+  length  Int
+  time    Float
+  date    Date
+}

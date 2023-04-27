@@ -4,7 +4,7 @@
     const test : Test = new Test();
     let sentence : string = "";
     const senteceLength = 10;
-
+    ResetSentence();
     function ResetSentence() {
         sentence = test.Sentence(senteceLength);
     }
