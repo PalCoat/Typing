@@ -1,19 +1,25 @@
-//import { prisma } from "$lib/Database.ts";
+//import { prisma } from "./Database";
 
-const words: string[] = ["one", "two", "three", "four"];
+const words: string[] = ["strange", "broad", "create", "whether", "begin", "knew", "miss", "who"];
 
 export class Test {
     Sentence(length: number): string {
-        var sentence: string = this.RandomWord();
+        let previousWord : string = "";
+        let sentence: string = this.RandomWord(previousWord);
         while (length > 0) {
-            sentence += " " + this.RandomWord();
+            previousWord = this.RandomWord(previousWord);
+            sentence += " " + previousWord;
             length -= 1;
         }
         return sentence;
     }
 
-    RandomWord(): string {
-        return words[GetRandomInt(0, words.length)];
+    RandomWord(previousWord: string): string {
+        let word: string = words[GetRandomInt(0, words.length)];
+        if (word == previousWord) {
+            return this.RandomWord(previousWord);
+        }
+        return word;
     }
 }
 
