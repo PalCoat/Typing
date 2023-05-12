@@ -4,7 +4,7 @@
     import { Test } from "../lib/scripts/Script";
     const test : Test = new Test();
     let sentence : string = "";
-    const senteceLength = 10;
+    const sentenceLength = 10;
     let word : string = "";
     let startDate : Date;
     let input;
@@ -12,7 +12,7 @@
     ResetSentence();
     onMount(() => input.focus())
     function ResetSentence() {
-        sentence = test.Sentence(senteceLength);
+        sentence = test.Sentence(sentenceLength);
         word = ""
         wordsPerMinute = 0;
         input?.focus()
@@ -29,7 +29,9 @@
     }
 
     function WordsPerMinute() {
-        return Math.round((((word.length * Accuracy()) / 4.7) / ((new Date().getTime() - startDate.getTime()) / 1000)) * 60);
+        let WPM : number = Math.round((((word.length * Accuracy()) / 4.7) / ((new Date().getTime() - startDate.getTime()) / 1000)) * 60);
+        if (WPM == Infinity) return 0;
+        return WPM
     }
 
     function Accuracy(): number {
@@ -62,7 +64,7 @@
         <div class="flex justify-center">
             <p class="text-3xl">{wordsPerMinute}</p>
         </div>
-        <p class="text-3xl flex justify-center">
+        <p class="text-3xl inline-block justify-center">
             {#key word}
                 {#each sentence as character, i}
                     {#if CheckCharacterAt(i)}
