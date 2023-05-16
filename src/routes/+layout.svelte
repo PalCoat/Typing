@@ -5,7 +5,7 @@
     import Profile from "../lib/components/profile.svelte";
 </script>
 
-<div>
+<div class="w-3/4 flex flex-col mx-auto">
     <div class="flex flex-row justify-start gap-5 bg-skin-fill shadow-lg m-2 p-2 rounded text-xl">
             <a class="flex flex-row gap-2 bg-skin-fill-accent shadow-2xl px-2 rounded" href="/">
                 <Icon/>

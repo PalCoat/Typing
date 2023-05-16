@@ -29,7 +29,11 @@
     }
 
     function WordsPerMinute() {
-        return Math.round((((word.length * Accuracy()) / 4.7) / ((new Date().getTime() - startDate.getTime()) / 1000)) * 60);
+        let placeholder = Math.round((((word.length * Accuracy()) / 4.7) / ((new Date().getTime() - startDate.getTime()) / 1000)) * 60);
+        if (Number.isFinite(placeholder) && !Number.isNaN(placeholder)) {
+            return placeholder;
+        }
+        return 0;
     }
 
     function Accuracy(): number {

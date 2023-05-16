@@ -2,7 +2,6 @@
 
 const words: string[] = [
     "strange",
-    "begin",
     "knew",
     "miss",
     "who",
@@ -12,7 +11,6 @@ const words: string[] = [
     "in",
     "she",
     "will",
-    "not",
     "see",
 ];
 
