@@ -1,7 +1,7 @@
 <script lang="ts">
     import "../app.css";
     import { onMount } from "svelte"
-    import { Test } from "../lib/scripts/Script";
+    import { Test } from "$lib/scripts/Script";
     const test : Test = new Test();
     let sentence : string = "";
     const sentenceLength = 10;
@@ -29,7 +29,8 @@
     }
 
     function WordsPerMinute() {
-        let placeholder = Math.round((((word.length * Accuracy()) / 4.7) / ((new Date().getTime() - startDate.getTime()) / 1000)) * 60);
+        let length = Math.min(word.length, sentence.length);
+        let placeholder = Math.round((((length * Accuracy()) / 4.7) / ((new Date().getTime() - startDate.getTime()) / 1000)) * 60);
         if (Number.isFinite(placeholder) && !Number.isNaN(placeholder)) {
             return placeholder;
         }
@@ -66,7 +67,7 @@
         <div class="flex justify-center">
             <p class="text-3xl">{wordsPerMinute}</p>
         </div>
-        <p class="text-3xl inline-block justify-center">
+        <p class="text-3xl flex justify-center">
             {#key word}
                 {#each sentence as character, i}
                     {#if CheckCharacterAt(i)}
@@ -97,7 +98,7 @@
                 {/each}
             {/key}
         </p>
-        <input bind:this={input} bind:value={word} type="text" placeholder="{sentence}" class="shadow-2xl p-2 rounded" on:input={() => HandleInput()} on:change={() => SubmitText()}>
+        <input bind:this={input} bind:value={word} type="text" onpaste="return false;" placeholder="{sentence}" class="shadow-2xl p-2 rounded" on:input={() => HandleInput()} on:change={() => SubmitText()}>
         <div class="flex justify-center">
             <button class="shadow-2xl p-2 w-min rounded align-middle" on:click={() => ResetSentence()}>Reset</button>
         </div>

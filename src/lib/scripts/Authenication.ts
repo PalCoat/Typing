@@ -1,24 +1,19 @@
-import { prisma } from "./Database";
+import { prisma } from "$lib/scripts/Database";
 import * as crypto from "crypto";
 
 export class Authentication {
     randomizer: UIDRandomizer = new UIDRandomizer();
     encrypter: Encrypter = new Encrypter();
 
-    async Login(formData: FormData): Promise<{ message: string }> {
+    async Login(formData: FormData, cookies): Promise<string> {
         const username = formData.get("username")?.toString();
         const password = formData.get("password")?.toString();
-
         if (!username) {
-            return {
-                message: "username missing",
-            };
+            return "Username missing";
         }
 
         if (!password) {
-            return {
-                message: "password missing",
-            };
+            return "Password missing";
         }
 
         try {
@@ -27,9 +22,7 @@ export class Authentication {
             });
 
             if (!result) {
-                return {
-                    message: "wrong credentials",
-                };
+                return "User does not exist";
             }
 
             const { salt, hash } = result;
@@ -37,38 +30,42 @@ export class Authentication {
             const newhash = this.encrypter.hash(password, salt);
 
             if (newhash != hash) {
-                return {
-                    message: "wrong credentials",
-                };
+                return "Wrong credentials";
             }
 
             const session = this.randomizer.generate_unique_id();
 
-            const update = await prisma.user.update({
+            await prisma.user.update({
                 where: { id: result.id },
                 data: {
                     session,
                 },
             });
 
-            return { message: "Login success" };
-        } catch (error) {
-            return {
-                message: "Database connection error",
-            };
+            cookies.set("session", session, {
+                path: "/",
+                httpOnly: true,
+                sameSite: "strict",
+                secure: true,
+                maxAge: 60,
+            });
+
+            return "Login success";
+        } catch {
+            return "Database connection error";
         }
     }
 
-    async Register(formData: FormData): Promise<{ message: string }> {
+    async Register(formData: FormData, cookies): Promise<string> {
         const username = formData.get("username")?.toString();
         const password = formData.get("password")?.toString();
 
         if (!username) {
-            return { message: "Username missing" };
+            return "Username missing";
         }
 
         if (!password) {
-            return { message: "Password missing" };
+            return "Password missing";
         }
 
         try {
@@ -76,14 +73,12 @@ export class Authentication {
                 where: { name: username },
             });
             if (result) {
-                return { message: "User already exists" };
+                return "User already exists";
             }
 
             const session = new UIDRandomizer().generate_unique_id();
             const salt = crypto.randomBytes(16).toString("hex");
-            const hash = crypto
-                .pbkdf2Sync(password, salt, 1000, 64, "sha512")
-                .toString("hex");
+            const hash = this.encrypter.hash(password, salt);
 
             const user = await prisma.user.create({
                 data: {
@@ -93,9 +88,18 @@ export class Authentication {
                     session,
                 },
             });
-            return { message: "Register success" };
-        } catch (error) {
-            return { message: "Database connection error" };
+
+            cookies.set("session", user.session, {
+                path: "/",
+                httpOnly: true,
+                sameSite: "strict",
+                secure: true,
+                maxAge: 60,
+            });
+
+            return "Register success";
+        } catch {
+            return "Database connection error";
         }
     }
 }
@@ -109,7 +113,7 @@ class UIDRandomizer {
 class Encrypter {
     hash(password: string, salt: string): string {
         return crypto
-            .pbkdf2Sync(password, salt, 1000, 64, "sha512")
+            .pbkdf2Sync(password, salt, 1000, 15, "sha512")
             .toString("hex");
     }
 }

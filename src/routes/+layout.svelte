@@ -15,10 +15,16 @@
                 <Trophy/>
                 <p class="align-middle leading-10">Leaderboard</p>
             </a>
-            <a class="flex flex-row gap-2 ml-auto shadow-2xl px-2 rounded" href="/profile">
-                <Profile/>
-                <p class="align-middle leading-10">Profile</p>
-            </a>
-    </div>
+            <div class="ml-auto flex flex-row gap-2">
+                <a class="flex flex-row gap-2  shadow-2xl px-2 rounded" href="/signup">
+                    <Profile/>
+                    <p class="align-middle leading-10">Sign Up</p>
+                </a>
+                <a class="flex flex-row gap-2 ml-auto shadow-2xl px-2 rounded" href="/signin">
+                    <Profile/>
+                    <p class="align-middle leading-10">Sign In</p>
+                </a>
+            </div>
+        </div>
 </div>
 <slot/>
