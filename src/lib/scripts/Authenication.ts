@@ -1,19 +1,21 @@
 import { prisma } from "$lib/scripts/Database";
 import * as crypto from "crypto";
 
+type AuthenticationResult = {success : boolean, message: string};
+
 export class Authentication {
     randomizer: UIDRandomizer = new UIDRandomizer();
     encrypter: Encrypter = new Encrypter();
 
-    async Login(formData: FormData, cookies): Promise<string> {
+    async Login(formData: FormData, cookies): Promise<AuthenticationResult> {
         const username = formData.get("username")?.toString();
         const password = formData.get("password")?.toString();
         if (!username) {
-            return "Username missing";
+            return {success: false, message: "Username missing"};
         }
 
         if (!password) {
-            return "Password missing";
+            return {success: false, message: "Password missing"};
         }
 
         try {
@@ -22,7 +24,7 @@ export class Authentication {
             });
 
             if (!result) {
-                return "User does not exist";
+                return {success: false, message: "User does not exist"};
             }
 
             const { salt, hash } = result;
@@ -30,7 +32,7 @@ export class Authentication {
             const newhash = this.encrypter.hash(password, salt);
 
             if (newhash != hash) {
-                return "Wrong credentials";
+                return {success: false, message: "Wrong credentials"};
             }
 
             const session = this.randomizer.generate_unique_id();
@@ -47,25 +49,24 @@ export class Authentication {
                 httpOnly: true,
                 sameSite: "strict",
                 secure: true,
-                maxAge: 60,
+                maxAge: 60 * 60,
             });
-
-            return "Login success";
+            return {success: true, message: "Login success"};
         } catch {
-            return "Database connection error";
+            return {success: false, message: "Database connection error"};
         }
     }
 
-    async Register(formData: FormData, cookies): Promise<string> {
+    async Register(formData: FormData, cookies): Promise<AuthenticationResult> {
         const username = formData.get("username")?.toString();
         const password = formData.get("password")?.toString();
 
         if (!username) {
-            return "Username missing";
+            return {success: false, message: "Username missing"};
         }
 
         if (!password) {
-            return "Password missing";
+            return {success: false, message: "Password missing"};
         }
 
         try {
@@ -73,7 +74,7 @@ export class Authentication {
                 where: { name: username },
             });
             if (result) {
-                return "User already exists";
+                return {success: false, message: "User already exists"};
             }
 
             const session = new UIDRandomizer().generate_unique_id();
@@ -94,12 +95,12 @@ export class Authentication {
                 httpOnly: true,
                 sameSite: "strict",
                 secure: true,
-                maxAge: 60,
+                maxAge: 60 * 60,
             });
 
-            return "Register success";
+            return {success: true, message: "Register success"};
         } catch {
-            return "Database connection error";
+            return {success: false, message: "Database connection error"};
         }
     }
 }
@@ -113,7 +114,7 @@ class UIDRandomizer {
 class Encrypter {
     hash(password: string, salt: string): string {
         return crypto
-            .pbkdf2Sync(password, salt, 1000, 15, "sha512")
+            .pbkdf2Sync(password, salt, 10, 15, "sha512")
             .toString("hex");
     }
 }

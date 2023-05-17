@@ -3,7 +3,7 @@ CREATE TABLE "User" (
     "id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
     "name" TEXT NOT NULL,
     "salt" TEXT NOT NULL,
-    "session" TEXT NOT NULL,
+    "session" TEXT,
     "hash" TEXT NOT NULL
 );
 

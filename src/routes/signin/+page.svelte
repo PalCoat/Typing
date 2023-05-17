@@ -1,7 +1,12 @@
 <script lang="ts">
     import type { ActionData } from './$types';
+    import { redirect } from '@sveltejs/kit';
 
     export let form: ActionData;
+
+    $: if (form?.success) {
+        throw redirect(307, '/');
+    }
 </script>
 
 <div class="flex flex-row justify-center align-middle">
@@ -11,8 +16,8 @@
             <input type="password" placeholder="Password" class="shadow-lg" name="password">
             <button class="shadow-lg">Sign In</button>
             <div class="flex justify-center">
-                {#if form}
-                    {form}
+                {#if form?.message}
+                    {form?.message}
                 {/if}
             </div>
         </form>

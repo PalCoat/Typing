@@ -1,4 +1,4 @@
-//import { prisma } from "./Database";
+import { prisma } from "./Database";
 
 const words: string[] = [
     "strange",
@@ -35,6 +35,19 @@ export class Test {
         }
         return word;
     }
+
+
+    async SubmitTest(length: number, time: number, locals) {
+        const user = await prisma.user.findFirst({where: {session: locals.session}});
+        if (!user) return;
+        const test = prisma.test.create({data: {
+            length: length,
+            time: time,
+            date: new Date(),
+            user: user,
+        }});
+
+    }
 }
 
 function GetRandomInt(min: number, max: number) {
@@ -42,5 +55,3 @@ function GetRandomInt(min: number, max: number) {
     max = Math.floor(max);
     return Math.floor(Math.random() * (max - min) + min);
 }
-
-export function SubmitTest(wordsPerMinute: number) {}
