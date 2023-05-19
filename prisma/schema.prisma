@@ -18,8 +18,7 @@ model User {
 
 model Test {
   id      Int      @id @default(autoincrement())
-  length  Int
-  time    Float
+  WPS     Int
   date    DateTime
   user    User?    @relation(fields: [userId], references: [id])
   userId  Int?

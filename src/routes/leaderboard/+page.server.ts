@@ -1,5 +1,11 @@
 import type { PageServerLoad } from './$types';
+import { prisma } from "$lib/scripts/Database";
 
 export const load = (async () => {
-    return {};
+    const tests = await prisma.test.findMany({
+        include: {
+            user: true,
+        }
+    });
+    return { tests };
 }) satisfies PageServerLoad;

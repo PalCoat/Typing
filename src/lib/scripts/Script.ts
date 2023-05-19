@@ -1,5 +1,3 @@
-import { prisma } from "./Database";
-
 const words: string[] = [
     "strange",
     "knew",
@@ -34,19 +32,6 @@ export class Test {
             return this.RandomWord(previousWord);
         }
         return word;
-    }
-
-
-    async SubmitTest(length: number, time: number, locals) {
-        const user = await prisma.user.findFirst({where: {session: locals.session}});
-        if (!user) return;
-        const test = prisma.test.create({data: {
-            length: length,
-            time: time,
-            date: new Date(),
-            user: user,
-        }});
-
     }
 }
 

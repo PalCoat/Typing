@@ -7,7 +7,7 @@
     const sentenceLength = 10;
     let word : string = "";
     let startDate : Date;
-    let input;
+    let input : HTMLElement;
     let wordsPerMinute : number = 0;
     ResetSentence();
     onMount(() => input.focus())
@@ -18,14 +18,20 @@
         input?.focus()
     }
 
-    function SubmitText() {
-        if (sentence.length > word.length) {
-            console.log("You have to complete the sentence");
-        } else {
-            console.log("Submitted");
-            console.log(Accuracy());
-            ResetSentence();
-        }
+    async function SubmitText() {
+        if (sentence.length > word.length) return;
+        const WPS : Number = WordsPerMinute();
+        const formData = {
+            WPS,
+        };
+
+        fetch("?/Submit", {
+        method: 'POST',
+        body: JSON.stringify(formData),
+        })
+        .then()
+        .catch();
+        ResetSentence();
     }
 
     function WordsPerMinute() {
@@ -98,7 +104,7 @@
                 {/each}
             {/key}
         </p>
-        <input bind:this={input} bind:value={word} type="text" onpaste="return false;" placeholder="{sentence}" class="shadow-2xl p-2 rounded" on:input={() => HandleInput()} on:change={() => SubmitText()}>
+        <input bind:this={input} bind:value={word} type="text" ondrop="return false" onpaste="return false" placeholder="{sentence}" class="shadow-2xl p-2 rounded" on:input={() => HandleInput()} on:change={() => SubmitText()}>
         <div class="flex justify-center">
             <button class="shadow-2xl p-2 w-min rounded align-middle" on:click={() => ResetSentence()}>Reset</button>
         </div>

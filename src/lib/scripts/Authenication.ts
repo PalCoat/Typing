@@ -1,4 +1,5 @@
 import { prisma } from "$lib/scripts/Database";
+import type { Cookies } from "@sveltejs/kit";
 import * as crypto from "crypto";
 
 type AuthenticationResult = {success : boolean, message: string};
@@ -7,7 +8,7 @@ export class Authentication {
     randomizer: UIDRandomizer = new UIDRandomizer();
     encrypter: Encrypter = new Encrypter();
 
-    async Login(formData: FormData, cookies): Promise<AuthenticationResult> {
+    async Login(formData: FormData, cookies : Cookies): Promise<AuthenticationResult> {
         const username = formData.get("username")?.toString();
         const password = formData.get("password")?.toString();
         if (!username) {
@@ -57,7 +58,7 @@ export class Authentication {
         }
     }
 
-    async Register(formData: FormData, cookies): Promise<AuthenticationResult> {
+    async Register(formData: FormData, cookies : Cookies): Promise<AuthenticationResult> {
         const username = formData.get("username")?.toString();
         const password = formData.get("password")?.toString();
 
