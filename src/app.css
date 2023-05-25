@@ -4,9 +4,15 @@
 
 @layer base {
     :root {
-        --color-fill: #171717;
-        --color-fill-accent: #262626;
-        --color-fill-accent-hover: #404040;
+        --color-fill: #303030;
+        --color-fill-accent: #333333;
+        --color-fill-secondary_accent: #3D3D3D;
+        --color-fill-accent-hover: #868282;
         --color-text: #fafafa;
     }
+}
+
+body {
+    background-color: var(--color-fill);
+    color: var(--color-text);
 }

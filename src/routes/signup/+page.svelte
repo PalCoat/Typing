@@ -10,11 +10,11 @@
 </script>
 
 <div class="flex flex-row justify-center align-middle">
-    <div class="shadow-2xl rounded">
+    <div class="shadow-2xl rounded bg-skin-accent">
         <form class="flex flex-col gap-5 p-10" method="POST" action="?/Register">
-            <input type="text" placeholder="Username" class="shadow-lg" name="username">
-            <input type="password" placeholder="Password" class="shadow-lg" name="password">
-            <button class="shadow-lg">Sign Up</button>
+            <input type="text" placeholder="Username" class="shadow-lg bg-skin-secondary_accent" name="username">
+            <input type="password" placeholder="Password" class="shadow-lg bg-skin-secondary_accent" name="password">
+            <button class="shadow-lg rounded bg-skin-secondary_accent">Sign Up</button>
             <div class="flex justify-center">
                 {#if form?.message}
                     {form?.message}

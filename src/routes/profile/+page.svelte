@@ -11,7 +11,7 @@
         </div>
         <div class="flex justify-center">
             <form method="POST" action="?/Logout">
-                <button class="shadow-lg p-2 rounded">Sign Out</button>
+                <button class="shadow-lg p-2 rounded bg-skin-accent">Sign Out</button>
             </form>
         </div>
     </div>

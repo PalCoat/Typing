@@ -1,39 +1,54 @@
 <script lang="ts">
     import "../../app.css";
-    import Trophy from "../../lib/components/trophy.svelte";
-    import Profile from "../../lib/components/profile.svelte";
-    
+    import Trophy from "$lib/components/trophy.svelte";
+    import Profile from "$lib/components/profile.svelte";
+
     import type { PageServerData } from './$types';
     export let data: PageServerData;
+    const scores : PageServerData = insertionSort(data);
+
+    function insertionSort(arr : PageServerData) {
+    for (let i = 1; i < arr.tests.length; i++) {
+        for (let j = i - 1; j > -1; j--) {
+            if (arr.tests[j + 1].WPS > arr.tests[j].WPS) {
+                [arr.tests[j + 1], arr.tests[j]] = [arr.tests[j], arr.tests[j + 1]];
+            }
+        }
+    }
+    return arr;
+}
 </script>
 
 <div class="flex justify-center">
     <div class="flex flex-col w-1/3">
         <div class="flex justify-between">
-            <p>Name</p>
-            <p>Score (WPS)</p>
+            <div class="flex gap-2">
+                <p>#</p>
+                <p>Name</p>
+            </div>
+            <p>Score (WPM)</p>
             <p>Date</p>
         </div>
         <div class="flex justify-between">
             <div>
-                {#each data.tests as test, i}
+                {#each scores.tests as score, i}
                 <div class="flex gap-2">
                     <p>{i + 1}.</p>
-                    <p>{test.user?.name}</p>
+                    <p>{score.user?.name}</p>
                 </div>
                 {/each}
             </div>
             <div>
-                {#each data.tests as test}
+                {#each scores.tests as score}
                 <div>
-                    <p>{test.WPS}</p>
+                    <p>{score.WPS}</p>
                 </div>
                 {/each}
             </div>
             <div>
-                {#each data.tests as test}
+                {#each scores.tests as score}
                 <div>
-                    <p>{test.date.toLocaleDateString()}</p>
+                    <p>{score.date.toLocaleDateString()}</p>
                 </div>
                 {/each}
             </div>

@@ -1,7 +1,7 @@
 module.exports = {
     content: ["./src/routes/**/*.{svelte,js,ts}"],
     theme: {
-        extends: {
+        extend: {
             textColor: {
                 skin: {
                     text: "var(--color-text)",
@@ -11,6 +11,7 @@ module.exports = {
                 skin: {
                     fill: "var(--color-fill)",
                     accent: "var(--color-fill-accent)",
+                    secondary_accent: "var(--color-fill-secondary_accent)",
                     hover: "var(--color-fill-accent-hover)",
                 },
             },

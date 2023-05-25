@@ -51,9 +51,9 @@ export class Authentication {
             cookies.set("session", session, {
                 path: "/",
                 maxAge: 60 * 60,
-                httpOnly: true, // optional for now
-                sameSite: "strict", // optional for now
-                secure: process.env.NODE_ENV === "production", // optional for now
+                httpOnly: true,
+                sameSite: "strict",
+                secure: false,
             });
             return { success: true, message: "Login success" };
         } catch {
@@ -101,13 +101,30 @@ export class Authentication {
                 path: "/",
                 httpOnly: true,
                 sameSite: "strict",
-                secure: true,
+                secure: false,
                 maxAge: 60 * 60,
             });
 
             return { success: true, message: "Register success" };
         } catch {
             return { success: false, message: "Database connection error" };
+        }
+    }
+
+    async Logout(sessionId : string): Promise<AuthenticationResult> {
+        try {
+            const session = new UIDRandomizer().generate_unique_id();
+            const result = await prisma.user.update({
+                where: {
+                    session: sessionId
+                },
+                data: {
+                    session: session
+                }
+            });
+            return { success: true, message: "Sign out success" };
+        } catch {
+            return { success: false, message: "Sign out fail" };
         }
     }
 }

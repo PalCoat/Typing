@@ -78,14 +78,14 @@
 </script>
 
 <div class="flex justify-center">
-    <div class="flex flex-col gap-2 w-1/2">
+    <div class="flex flex-col gap-5 w-1/2">
         <div class="flex justify-center">
-            <div class="flex gap-10 text-3xl">
-                <p>{wordsPerMinute}</p>
+            <div class="flex justify-center text-3xl w-full">
+                    <p class="basis-48 text-center">{wordsPerMinute}</p>
                 {#if lastWordsPerMinute != 0}
-                    <p>|</p>
-                    <p>{lastWordsPerMinute}</p>
-                    <p>{lastAccuracy}%</p>
+                    <p class="basis-2 text-center">|</p>
+                    <p class="basis-24 text-center">{lastWordsPerMinute}</p>
+                    <p class="basis-24 text-center">{lastAccuracy}%</p>
                 {/if}
             </div>
         </div>
@@ -130,9 +130,9 @@
                 {/each}
             {/key}
         </p>
-        <input bind:this={input} bind:value={word} type="text" ondrop="return false" onpaste="return false" placeholder="{sentence}" class="shadow-2xl p-2 rounded" on:input={() => HandleInput()} on:change={() => SubmitText()}>
+        <input bind:this={input} bind:value={word} type="text" ondrop="return false" onpaste="return false" placeholder="{sentence}" class="shadow-2xl p-2 rounded bg-skin-accent" on:input={() => HandleInput()} on:change={() => SubmitText()}>
         <div class="flex justify-center">
-            <button class="shadow-2xl p-2 w-min rounded align-middle" on:click={() => ResetSentence()}>Reset</button>
+            <button class="shadow-2xl p-2 w-min rounded align-middle bg-skin-accent" on:click={() => ResetSentence()}>Reset</button>
         </div>
     </div>
 </div>

@@ -14,9 +14,19 @@ export const load = (async ({ locals }) => {
 }) satisfies PageServerLoad;
 
 export const actions: Actions = {
-    Logout: async ({ cookies }) => {
-        cookies.delete("session");
-        throw redirect(303, "/");
+    Logout: async ({ cookies, locals }) => {
+        if ((await authentication.Logout(locals.session)).success) {
+            cookies.delete("session");
+            
+            cookies.set("session", "", {
+                path: "/",
+                httpOnly: true,
+                sameSite: "strict",
+                secure: false,
+                maxAge: 60 * 60,
+            });
+            throw redirect(303, "/");
+        }
     },
     Delete: ({ cookies, locals }) => {
         const result = prisma.user.delete({
