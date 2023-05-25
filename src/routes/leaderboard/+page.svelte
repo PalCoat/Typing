@@ -5,22 +5,38 @@
     
     import type { PageServerData } from './$types';
     export let data: PageServerData;
-    console.log(data);
 </script>
 
 <div class="flex justify-center">
-    <div class="flex flex-col">
-        <div class="flex gap-10">
+    <div class="flex flex-col w-1/3">
+        <div class="flex justify-between">
             <p>Name</p>
-            <p>Score</p>
+            <p>Score (WPS)</p>
             <p>Date</p>
         </div>
-        {#each data.tests as test}
-            <div class="flex gap-10">
-                <p>{test.user?.name}</p>
-                <p>{test.WPS}</p>
-                <p>{test.date.toLocaleDateString()}</p>
+        <div class="flex justify-between">
+            <div>
+                {#each data.tests as test, i}
+                <div class="flex gap-2">
+                    <p>{i + 1}.</p>
+                    <p>{test.user?.name}</p>
+                </div>
+                {/each}
             </div>
-        {/each}
+            <div>
+                {#each data.tests as test}
+                <div>
+                    <p>{test.WPS}</p>
+                </div>
+                {/each}
+            </div>
+            <div>
+                {#each data.tests as test}
+                <div>
+                    <p>{test.date.toLocaleDateString()}</p>
+                </div>
+                {/each}
+            </div>
+        </div>
     </div>
 </div>

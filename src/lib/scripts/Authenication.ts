@@ -2,21 +2,24 @@ import { prisma } from "$lib/scripts/Database";
 import type { Cookies } from "@sveltejs/kit";
 import * as crypto from "crypto";
 
-type AuthenticationResult = {success : boolean, message: string};
+type AuthenticationResult = { success: boolean; message: string };
 
 export class Authentication {
     randomizer: UIDRandomizer = new UIDRandomizer();
     encrypter: Encrypter = new Encrypter();
 
-    async Login(formData: FormData, cookies : Cookies): Promise<AuthenticationResult> {
+    async Login(
+        formData: FormData,
+        cookies: Cookies
+    ): Promise<AuthenticationResult> {
         const username = formData.get("username")?.toString();
         const password = formData.get("password")?.toString();
         if (!username) {
-            return {success: false, message: "Username missing"};
+            return { success: false, message: "Username missing" };
         }
 
         if (!password) {
-            return {success: false, message: "Password missing"};
+            return { success: false, message: "Password missing" };
         }
 
         try {
@@ -25,7 +28,7 @@ export class Authentication {
             });
 
             if (!result) {
-                return {success: false, message: "User does not exist"};
+                return { success: false, message: "User does not exist" };
             }
 
             const { salt, hash } = result;
@@ -33,7 +36,7 @@ export class Authentication {
             const newhash = this.encrypter.hash(password, salt);
 
             if (newhash != hash) {
-                return {success: false, message: "Wrong credentials"};
+                return { success: false, message: "Wrong credentials" };
             }
 
             const session = this.randomizer.generate_unique_id();
@@ -47,27 +50,30 @@ export class Authentication {
 
             cookies.set("session", session, {
                 path: "/",
-                httpOnly: true,
-                sameSite: "strict",
-                secure: true,
                 maxAge: 60 * 60,
+                httpOnly: true, // optional for now
+                sameSite: "strict", // optional for now
+                secure: process.env.NODE_ENV === "production", // optional for now
             });
-            return {success: true, message: "Login success"};
+            return { success: true, message: "Login success" };
         } catch {
-            return {success: false, message: "Database connection error"};
+            return { success: false, message: "Database connection error" };
         }
     }
 
-    async Register(formData: FormData, cookies : Cookies): Promise<AuthenticationResult> {
+    async Register(
+        formData: FormData,
+        cookies: Cookies
+    ): Promise<AuthenticationResult> {
         const username = formData.get("username")?.toString();
         const password = formData.get("password")?.toString();
 
         if (!username) {
-            return {success: false, message: "Username missing"};
+            return { success: false, message: "Username missing" };
         }
 
         if (!password) {
-            return {success: false, message: "Password missing"};
+            return { success: false, message: "Password missing" };
         }
 
         try {
@@ -75,7 +81,7 @@ export class Authentication {
                 where: { name: username },
             });
             if (result) {
-                return {success: false, message: "User already exists"};
+                return { success: false, message: "User already exists" };
             }
 
             const session = new UIDRandomizer().generate_unique_id();
@@ -99,9 +105,9 @@ export class Authentication {
                 maxAge: 60 * 60,
             });
 
-            return {success: true, message: "Register success"};
+            return { success: true, message: "Register success" };
         } catch {
-            return {success: false, message: "Database connection error"};
+            return { success: false, message: "Database connection error" };
         }
     }
 }

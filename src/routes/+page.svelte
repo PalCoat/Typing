@@ -4,13 +4,16 @@
     import { Test } from "$lib/scripts/Script";
     const test : Test = new Test();
     let sentence : string = "";
-    const sentenceLength = 10;
+    const sentenceLength = 15;
     let word : string = "";
     let startDate : Date;
     let input : HTMLElement;
     let wordsPerMinute : number = 0;
+    let lastWordsPerMinute : number = 0;
+    let lastAccuracy : number = 0;
     ResetSentence();
     onMount(() => input.focus())
+
     function ResetSentence() {
         sentence = test.Sentence(sentenceLength);
         word = ""
@@ -20,7 +23,9 @@
 
     async function SubmitText() {
         if (sentence.length > word.length) return;
-        const WPS : Number = WordsPerMinute();
+        const WPS : number = WordsPerMinute();
+        lastWordsPerMinute = WPS;
+        lastAccuracy = Math.round(Accuracy() * 100);
         const formData = {
             WPS,
         };
@@ -45,15 +50,19 @@
 
     function Accuracy(): number {
         let correct = 0;
-        for (let i = 0; i < word.length; i++) {
+        let length = Math.min(word.length, sentence.length);
+        for (let i = 0; i < length; i++) {
             if (CheckCharacterAt(i)) {
                 correct++;
             }
         }
-        return (correct / sentence.length);
+        return (correct / length);
     }
 
     function HandleInput() {
+        if (word.length >= sentence.length) {
+            SubmitText();
+        }
         if (word.length == 1) {
             startDate = new Date();
         }
@@ -71,7 +80,14 @@
 <div class="flex justify-center">
     <div class="flex flex-col gap-2 w-1/2">
         <div class="flex justify-center">
-            <p class="text-3xl">{wordsPerMinute}</p>
+            <div class="flex gap-10 text-3xl">
+                <p>{wordsPerMinute}</p>
+                {#if lastWordsPerMinute != 0}
+                    <p>|</p>
+                    <p>{lastWordsPerMinute}</p>
+                    <p>{lastAccuracy}%</p>
+                {/if}
+            </div>
         </div>
         <p class="text-3xl flex justify-center">
             {#key word}
@@ -86,11 +102,21 @@
                         {/if}
                     {:else if i > word.length - 1}
                         {#if character == " "}
-                            <span>&nbsp;</span>
+                            {#if i == word.length}
+                                <span class="underline">
+                                    &nbsp;
+                                </span>
+                            {:else}
+                                <span>&nbsp;</span>
+                            {/if}
                         {:else}
-                            <span>
-                                {character}
-                            </span>
+                          {#if i == word.length}
+                                <span class="underline">
+                                    {character}
+                                </span>
+                            {:else}
+                                <span>{character}</span>
+                            {/if}
                         {/if}
                     {:else}
                         {#if character == " "}

@@ -33,7 +33,7 @@
                 <a class="flex flex-row gap-2 ml-auto shadow-2xl px-2 rounded" href="/signin">
                     <Profile/>
                     <p class="align-middle leading-10">Sign In</p>
-                </a>
+                </a> 
             </div>
             {/if}
         </div>
