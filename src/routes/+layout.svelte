@@ -10,7 +10,7 @@
 </script>
 
 <div class="w-3/4 flex flex-col mx-auto">
-    <div class="flex flex-row justify-start gap-5 shadow-lg m-2 p-2 rounded text-xl bg-skin-accent">
+    <div class="flex flex-row justify-start gap-2 shadow-lg m-2 p-2 rounded text-xl bg-skin-accent">
             <a class="flex flex-row gap-2 shadow-2xl px-2 rounded bg-skin-secondary_accent" href="/">
                 <Icon/>
                 <p class="align-middle leading-10">Typist</p>
@@ -26,10 +26,10 @@
                 </a>
             {:else}
             <div class="ml-auto flex flex-row gap-2">
-                <a class="flex flex-row gap-2  shadow-2xl px-2 rounded bg-skin-secondary_accent" href="/signup">
+                <a class="shadow-2xl px-2 rounded bg-skin-secondary_accent" href="/signup">
                     <p class="align-middle leading-10">Sign Up</p>
                 </a>
-                <a class="flex flex-row gap-2 ml-auto shadow-2xl px-2 rounded bg-skin-secondary_accent" href="/signin">
+                <a class="ml-auto shadow-2xl px-2 rounded bg-skin-secondary_accent" href="/signin">
                     <p class="align-middle leading-10">Sign In</p>
                 </a> 
             </div>

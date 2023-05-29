@@ -40,7 +40,7 @@
     }
 
     function WordsPerMinute() {
-        if (!startDate) return 0;
+        if (startDate == null) return 0;
         let length = Math.min(word.length, sentence.length);
         let placeholder = Math.round((((length * Accuracy()) / ((new Date().getTime() - startDate.getTime()) / 1000)) / 4.7) * 60);
         if (Number.isFinite(placeholder) && !Number.isNaN(placeholder)) {
