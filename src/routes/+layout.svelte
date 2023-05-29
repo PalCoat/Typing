@@ -27,11 +27,9 @@
             {:else}
             <div class="ml-auto flex flex-row gap-2">
                 <a class="flex flex-row gap-2  shadow-2xl px-2 rounded bg-skin-secondary_accent" href="/signup">
-                    <Profile/>
                     <p class="align-middle leading-10">Sign Up</p>
                 </a>
                 <a class="flex flex-row gap-2 ml-auto shadow-2xl px-2 rounded bg-skin-secondary_accent" href="/signin">
-                    <Profile/>
                     <p class="align-middle leading-10">Sign In</p>
                 </a> 
             </div>

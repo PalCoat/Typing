@@ -18,7 +18,7 @@
     return arr;
 }
 </script>
-
+<!--
 <div class="flex justify-center">
     <div class="flex flex-col w-1/3">
         <div class="flex justify-between">
@@ -53,5 +53,34 @@
                 {/each}
             </div>
         </div>
+    </div>
+</div>
+-->
+
+<div class="flex justify-center">
+    <div class="flex flex-col w-1/3">
+        <div class="flex p-2">
+            <p class="basis-[10%]">#</p>
+            <p class="basis-[45%]">Name</p>
+            <p class="basis-[20%] text-right">Score (WPM)</p>
+            <p class="basis-[25%] text-right">Date</p>
+        </div>
+        {#each scores.tests as score, i}
+            {#if i % 2 == 0}
+                <div class="flex bg-skin-secondary_accent p-2 rounded">
+                    <p class="basis-[10%]">{i + 1}.</p>
+                    <p class="basis-[45%]">{score.user?.name}</p>
+                    <p class="basis-[20%] text-right">{score.WPS}</p>
+                    <p class="basis-[25%] text-right">{score.date.toLocaleDateString()}</p>
+                </div>
+            {:else}
+                <div class="flex p-2 rounded">
+                    <p class="basis-[10%]">{i + 1}.</p>
+                    <p class="basis-[45%]">{score.user?.name}</p>
+                    <p class="basis-[20%] text-right">{score.WPS}</p>
+                    <p class="basis-[25%] text-right">{score.date.toLocaleDateString()}</p>
+                </div>
+            {/if}
+        {/each}
     </div>
 </div>

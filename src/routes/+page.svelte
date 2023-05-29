@@ -66,7 +66,6 @@
         if (word.length == 1) {
             startDate = new Date();
         }
-        wordsPerMinute = WordsPerMinute();
     }
 
     function CheckCharacterAt(index: number) {
@@ -75,6 +74,12 @@
         }
         return false;
     }
+
+    function UpdateWordsPerMinute() {
+        wordsPerMinute = WordsPerMinute();
+    }
+
+    setInterval(UpdateWordsPerMinute, 500);
 </script>
 
 <div class="flex justify-center">
