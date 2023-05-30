@@ -23,9 +23,3 @@ model Test {
   user    User?    @relation(fields: [userId], references: [id])
   userId  Int?
 }
-
-model Race {
-  id      Int     @id @default(autoincrement())
-  name    String
-  date    DateTime
-}

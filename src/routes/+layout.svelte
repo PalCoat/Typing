@@ -1,8 +1,9 @@
 <script lang="ts">
     import "../app.css";
-    import Icon from "../lib/components/icon.svelte";
-    import Trophy from "../lib/components/trophy.svelte";
-    import Profile from "../lib/components/profile.svelte";
+    import Icon from "$lib/components/icon.svelte";
+    import Trophy from "$lib/components/trophy.svelte";
+    import Profile from "$lib/components/profile.svelte";
+    import Flag from "$lib/components/flag.svelte";
 
     import type { LayoutServerData } from './$types';
     
@@ -20,6 +21,10 @@
                 <p class="align-middle leading-10">Leaderboard</p>
             </a>
             {#if data?.name}
+            <a class="flex flex-row gap-2 shadow-2xl px-2 rounded bg-skin-secondary_accent" href="/race">
+                <Flag/>
+                <p class="align-middle leading-10">Race</p>
+            </a>
                 <a class="flex flex-row gap-2 shadow-2xl ml-auto px-2 rounded bg-skin-secondary_accent" href="/profile">
                     <Profile/>
                     <p class="align-middle leading-10">{data?.name}</p>

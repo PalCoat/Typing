@@ -1,1 +1,0 @@
-<a href={"/race/" + 123}>Races</a>

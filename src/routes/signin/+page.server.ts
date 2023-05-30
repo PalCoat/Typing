@@ -1,5 +1,5 @@
 import type { Actions } from "./$types";
-import { Authentication } from "../../lib/scripts/Authenication";
+import { Authentication } from "$lib/scripts/Authenication";
 import { redirect } from "@sveltejs/kit";
 const autentication: Authentication = new Authentication();
 
