@@ -9,17 +9,13 @@ const words: string[] = [
     "in",
     "she",
     "would",
-    "hot",
     "red",
     "cold",
     "warm",
     "help",
-    "boulder",
-    "experience",
-    "adventure",
-    "medicine",
-    "counter",
-    "hopeful",
+    "could",
+    "hotel",
+    "new",
 ];
 
 export class Test {

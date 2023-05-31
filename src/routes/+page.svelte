@@ -3,10 +3,10 @@
     import { onMount } from "svelte";
     import { Test } from "$lib/scripts/Script";
     const test: Test = new Test();
-    let sentence: string = "Welcome to Typist!";
+    let sentence: string = "";
     const sentenceLength = 15;
     let word: string = "";
-    let startDate: Date;
+    let startDate: number;
     let input: HTMLElement;
     let wordsPerMinute: number = 0;
     let lastWordsPerMinute: number = 0;
@@ -36,17 +36,16 @@
             method: "POST",
             body: JSON.stringify(formData),
         })
-            .then()
-            .catch();
         ResetSentence();
     }
 
-    function WordsPerMinute() {
+    function WordsPerMinute() : number {
+        if (word.length < 5) return 0;
         if (startDate == null) return 0;
         let length = Math.min(word.length, sentence.length);
         let placeholder = Math.round(
             ((length * Accuracy()) /
-                ((new Date().getTime() - startDate.getTime()) / 1000) /
+                ((Date.now() - startDate) / 1000) /
                 4.7) *
                 60
         );
@@ -72,7 +71,7 @@
             SubmitText();
         }
         if (word.length == 1) {
-            startDate = new Date();
+            startDate = Date.now();
         }
     }
 
@@ -102,37 +101,37 @@
                 {/if}
             </div>
         </div>
-        <div class="text-3xl">
+        <div class="text-3xl flex-wrap flex">
             {#key word}
                 {#each sentence as character, i}
                     {#if CheckCharacterAt(i)}
                         {#if character == " "}
-                            <p>&nbsp;</p>
+                            <span>&nbsp;</span>
                         {:else}
-                            <p class="text-green-700 bg-green-300">
+                            <span class="text-green-700 bg-green-300">
                                 {character}
-                            </p>
+                            </span>
                         {/if}
                     {:else if i > word.length - 1}
                         {#if character == " "}
                             {#if i == word.length}
-                                <p class="underline"> &nbsp; </p>
+                                <span class="underline">&nbsp;</span>
                             {:else}
-                                <p>&nbsp;</p>
+                                <span>&nbsp;</span>
                             {/if}
                         {:else if i == word.length}
-                            <p class="underline">
+                            <span class="underline">
                                 {character}
-                            </p>
+                            </span>
                         {:else}
-                            <p>{character} </p>
+                            <span>{character}</span>
                         {/if}
                     {:else if character == " "}
-                        <p>&nbsp;</p>
+                        <span>&nbsp;</span>
                     {:else}
-                        <p class="text-red-700 bg-red-300">
+                        <span class="text-red-700 bg-red-300">
                             {character}
-                        </p>
+                        </span>
                     {/if}
                 {/each}
             {/key}
