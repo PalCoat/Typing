@@ -1,15 +1,25 @@
 const words: string[] = [
     "strange",
     "knew",
-    "miss",
+    "never",
     "who",
     "love",
     "hate",
     "one",
     "in",
     "she",
-    "will",
-    "see",
+    "would",
+    "hot",
+    "red",
+    "cold",
+    "warm",
+    "help",
+    "boulder",
+    "experience",
+    "adventure",
+    "medicine",
+    "counter",
+    "hopeful",
 ];
 
 export class Test {

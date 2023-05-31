@@ -1,29 +1,31 @@
 <script lang="ts">
     import "../app.css";
-    import { onMount } from "svelte"
+    import { onMount } from "svelte";
     import { Test } from "$lib/scripts/Script";
-    const test : Test = new Test();
-    let sentence : string = "";
+    const test: Test = new Test();
+    let sentence: string = "Welcome to Typist!";
     const sentenceLength = 15;
-    let word : string = "";
-    let startDate : Date;
-    let input : HTMLElement;
-    let wordsPerMinute : number = 0;
-    let lastWordsPerMinute : number = 0;
-    let lastAccuracy : number = 0;
-    ResetSentence();
-    onMount(() => input.focus())
+    let word: string = "";
+    let startDate: Date;
+    let input: HTMLElement;
+    let wordsPerMinute: number = 0;
+    let lastWordsPerMinute: number = 0;
+    let lastAccuracy: number = 0;
+    onMount(() => {
+        input.focus();
+        ResetSentence();
+    });
 
     function ResetSentence() {
         sentence = test.Sentence(sentenceLength);
-        word = ""
+        word = "";
         wordsPerMinute = 0;
-        input?.focus()
+        input?.focus();
     }
 
     async function SubmitText() {
         if (sentence.length > word.length) return;
-        const WPS : number = WordsPerMinute();
+        const WPS: number = WordsPerMinute();
         lastWordsPerMinute = WPS;
         lastAccuracy = Math.round(Accuracy() * 100);
         const formData = {
@@ -31,18 +33,23 @@
         };
 
         fetch("?/Submit", {
-        method: 'POST',
-        body: JSON.stringify(formData),
+            method: "POST",
+            body: JSON.stringify(formData),
         })
-        .then()
-        .catch();
+            .then()
+            .catch();
         ResetSentence();
     }
 
     function WordsPerMinute() {
         if (startDate == null) return 0;
         let length = Math.min(word.length, sentence.length);
-        let placeholder = Math.round((((length * Accuracy()) / ((new Date().getTime() - startDate.getTime()) / 1000)) / 4.7) * 60);
+        let placeholder = Math.round(
+            ((length * Accuracy()) /
+                ((new Date().getTime() - startDate.getTime()) / 1000) /
+                4.7) *
+                60
+        );
         if (Number.isFinite(placeholder) && !Number.isNaN(placeholder)) {
             return placeholder;
         }
@@ -57,7 +64,7 @@
                 correct++;
             }
         }
-        return (correct / length);
+        return correct / length;
     }
 
     function HandleInput() {
@@ -80,14 +87,14 @@
         wordsPerMinute = WordsPerMinute();
     }
 
-    setInterval(UpdateWordsPerMinute, 500);
+    setInterval(UpdateWordsPerMinute, 250);
 </script>
 
 <div class="flex justify-center">
     <div class="flex flex-col gap-5 w-1/2">
         <div class="flex justify-center">
             <div class="flex justify-center text-3xl w-full">
-                    <p class="basis-48 text-center">{wordsPerMinute}</p>
+                <p class="basis-48 text-center">{wordsPerMinute}</p>
                 {#if lastWordsPerMinute != 0}
                     <p class="basis-2 text-center">|</p>
                     <p class="basis-24 text-center">{lastWordsPerMinute}</p>
@@ -95,50 +102,57 @@
                 {/if}
             </div>
         </div>
-        <p class="text-3xl flex justify-center">
+        <div class="text-3xl">
             {#key word}
                 {#each sentence as character, i}
                     {#if CheckCharacterAt(i)}
                         {#if character == " "}
-                            <span>&nbsp;</span>
+                            <p>&nbsp;</p>
                         {:else}
-                            <span class="text-green-700 bg-green-300">
+                            <p class="text-green-700 bg-green-300">
                                 {character}
-                            </span>
+                            </p>
                         {/if}
                     {:else if i > word.length - 1}
                         {#if character == " "}
                             {#if i == word.length}
-                                <span class="underline">
-                                    &nbsp;
-                                </span>
+                                <p class="underline"> &nbsp; </p>
                             {:else}
-                                <span>&nbsp;</span>
+                                <p>&nbsp;</p>
                             {/if}
-                        {:else}
-                          {#if i == word.length}
-                                <span class="underline">
-                                    {character}
-                                </span>
-                            {:else}
-                                <span>{character}</span>
-                            {/if}
-                        {/if}
-                    {:else}
-                        {#if character == " "}
-                            <span>&nbsp;</span>
-                        {:else}
-                            <span class="text-red-700 bg-red-300">
+                        {:else if i == word.length}
+                            <p class="underline">
                                 {character}
-                            </span>
+                            </p>
+                        {:else}
+                            <p>{character} </p>
                         {/if}
+                    {:else if character == " "}
+                        <p>&nbsp;</p>
+                    {:else}
+                        <p class="text-red-700 bg-red-300">
+                            {character}
+                        </p>
                     {/if}
                 {/each}
             {/key}
-        </p>
-        <input bind:this={input} bind:value={word} type="text" ondrop="return false" onpaste="return false" placeholder="{sentence}" class="shadow-2xl p-2 rounded bg-skin-accent" on:input={() => HandleInput()} on:change={() => SubmitText()}>
+        </div>
+        <input
+            bind:this={input}
+            bind:value={word}
+            type="text"
+            ondrop="return false"
+            onpaste="return false"
+            placeholder={sentence}
+            class="shadow-2xl p-2 rounded bg-skin-accent"
+            on:input={() => HandleInput()}
+            on:change={() => SubmitText()}
+        />
         <div class="flex justify-center">
-            <button class="shadow-2xl p-2 w-min rounded align-middle bg-skin-accent" on:click={() => ResetSentence()}>Reset</button>
+            <button
+                class="shadow-2xl p-2 w-min rounded align-middle bg-skin-accent"
+                on:click={() => ResetSentence()}>Reset</button
+            >
         </div>
     </div>
 </div>

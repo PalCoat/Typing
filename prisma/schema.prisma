@@ -20,6 +20,6 @@ model Test {
   id      Int      @id @default(autoincrement())
   WPS     Int
   date    DateTime
-  user    User?    @relation(fields: [userId], references: [id])
+  user    User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId  Int?
 }

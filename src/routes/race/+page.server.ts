@@ -1,43 +1,51 @@
+/*
 import type { User } from "@prisma/client";
 import type { PageServerLoad } from "../$types";
 import { prisma } from "$lib/scripts/Database";
 import { redirect } from "@sveltejs/kit";
 import type { Actions } from "./$types";
-import WebSocket, { WebSocketServer } from 'ws';
-
-let racers: User[] = [];
+import { WebSocketServer } from "ws";
 
 export const load = (async ({ locals }) => {
-  const racer = await prisma.user.findFirst({
-    where: { session: locals.session },
-  });
-  if (racer == null) throw redirect(303, "/signin");
+    const racer = await prisma.user.findFirst({
+        where: { session: locals.session },
+    });
+    if (racer == null) throw redirect(303, "/signin");
 }) satisfies PageServerLoad;
 
 export const actions: Actions = {
-  Join: async ({ locals }) => {
-    const racer = await prisma.user.findFirst({
-      where: { session: locals.session },
-    });
-    if (racer == null) throw redirect(303, "/signin");
-    if (racers.find(({ id }) => id === racer.id) != undefined) return {racers};
-    racers.push(racer);
-    return { racers };
-  },
+    Join: async ({ locals }) => {
+        const racer = await prisma.user.findFirst({
+            where: { session: locals.session },
+        });
+        if (racer == null) throw redirect(303, "/signin");
+        if (racers.find(({ id }) => id === racer.id) != undefined)
+            return { racers };
+        racers.push(racer);
+        return { racers };
+    },
 } satisfies Actions;
 
-const server = new WebSocketServer({port:81});
+Save all users connected
+constantly set a progress and wpm to every user
+constatly send progress and wpm of each user to every user
 
-server.on("connection", socket => {
-  socket.on("message", message => {
-    socket.send("surely " + message);
-  });
+const server: WebSocketServer = new WebSocketServer({ port: 80 });
+
+server.on("connection", function connection(ws, req) {
+    const session = req.headers.cookie?.split("=")[1];
+
+    if (!session) {
+        return;
+    }
+
+    ws.on("error", console.error);
+
+    ws.on("message", function message(data) {
+        console.log(session + " sent " + data);
+        ws.send("thanks " + session);
+    });
+
+    ws.send("You are connected");
 });
-
-function CheckStart() {
-  if (racers.length < 2) return;
-
-}
-
-setInterval(CheckStart, 5000);
-
+*/
