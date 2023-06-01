@@ -9,7 +9,7 @@
     }
 
     let socket: WebSocket
-
+    let complete = false;
     let racers : Racer[] = [];
     let sentence : string = "";
     let word : string = "";
@@ -17,11 +17,18 @@
     let progress : number = 0;
     let startTime : number = 0;
     let currentTime : number = 0;
+    let endTime : number = 0;
+
     onMount(() => {
         socket = getSocket();
 
         socket.addEventListener("message", (event) => {
             let data = JSON.parse(event.data.toString());
+            if (data.endTime != undefined) {
+                endTime = data.endTime;
+                startTime = 0;
+                return;
+            }
             if (Array.isArray(data)) {
                 racers = data;
                 return;
@@ -29,7 +36,6 @@
             if (data.sentence != undefined) {
                 sentence = data.sentence.toString();
                 startTime = data.time;
-                
                 return;
             }
             const index = racers.findIndex(({name}) => name == data.name);
@@ -47,6 +53,7 @@
     });
 
     function Message() {
+        if (complete) return;
         const json = {wpm: WordsPerMinute(), progress: Progress()};
         if (socket == undefined) return;
         socket.send(JSON.stringify(json));
@@ -98,9 +105,11 @@
     }
 
     function HandleInput() {
-        if (word.length >= sentence.length) {
-            //Completed the thing
-        }
+        if (complete == true) return;
+        if (Progress() >= 100) complete = true;
+        socket.send(JSON.stringify({
+            completedTime: Date.now(),
+        }));
     }
 
     setInterval(UpdateWordsPerMinute, 250);
@@ -131,6 +140,9 @@
         </div>
         {#key currentTime}
             {#if currentTime > startTime}
+            {#if endTime != 0}
+                <p class="text-3xl text-center">Ending in: {Math.round((endTime - Date.now()) / 1000)}</p>
+            {/if}
             <div class="text-3xl flex-wrap flex">
                 {#key word}
                     {#each sentence as character, i}
