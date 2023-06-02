@@ -1,8 +1,6 @@
 <script lang="ts">
-    import "../app.css";
     import { onMount } from "svelte";
-    import { Test } from "$lib/scripts/Script";
-    const test: Test = new Test();
+    import { Sentence } from "$lib/scripts/Script";
     let sentence: string = "";
     const sentenceLength = 15;
     let word: string = "";
@@ -17,7 +15,7 @@
     });
 
     function ResetSentence() {
-        sentence = test.Sentence(sentenceLength);
+        sentence = Sentence(sentenceLength);
         word = "";
         wordsPerMinute = 0;
         input?.focus();

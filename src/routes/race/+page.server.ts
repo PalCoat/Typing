@@ -1,15 +1,28 @@
-import type { User } from "@prisma/client";
 import type { PageServerLoad } from "../$types";
 import { prisma } from "$lib/scripts/Database";
 import { redirect } from "@sveltejs/kit";
 import WebSocket, { WebSocketServer } from "ws";
-import { Test } from "$lib/scripts/Script";
-const test: Test = new Test();
-let sentence: string = test.Sentence(30);
-let racing = false;
-let racers: Racer[] = [];
-let startTime: number = 0;
-let endTime: number = 0;
+import { Sentence } from "$lib/scripts/Script";
+
+function returnWithout(username: string): Racer[] {
+    let placeholder: Racer[] = racers.slice();
+    const index: number = placeholder.findIndex(({ name }) => name == username);
+    if (index == -1) return placeholder;
+    placeholder.splice(index, 1);
+    return placeholder;
+}
+
+type Racer = {
+    name: string,
+    wpm: number,
+    progress: number,
+}
+
+type State = {
+    startTime: number,
+    sentence: string,
+    endTime: number,
+}
 
 export const load = (async ({ locals }) => {
     const racer = await prisma.user.findFirst({
@@ -18,13 +31,19 @@ export const load = (async ({ locals }) => {
     if (racer == null) throw redirect(303, "/signin");
 }) satisfies PageServerLoad;
 
-type Racer = {
-    name: string;
-    wpm: number;
-    progress: number;
-};
 
-const server: WebSocketServer = new WebSocketServer({ port: 80 });
+let racers: Racer[] = [];
+
+let state: State = {
+    startTime : 0,
+    sentence : "",
+    endTime : 0,
+}
+
+let started : boolean = false;
+let timeUntilRestart: number = 0;
+
+const server: WebSocketServer = new WebSocketServer({ port: 81 });
 
 server.on("connection", async function connection(ws, req) {
     const user = await prisma.user.findFirst({
@@ -34,87 +53,93 @@ server.on("connection", async function connection(ws, req) {
     });
 
     if (!user) return;
-    ws.send(JSON.stringify(returnWithout(user.name)));
 
-    if (racing)
-        ws.send(JSON.stringify({ time: startTime, sentence: sentence }));
-
-    racers.push({
-        name: user.name,
-        wpm: 0,
-        progress: 0,
-    });
-
-    server.clients.forEach(function each(client) {
-        if (client !== ws && client.readyState === WebSocket.OPEN) {
-            client.send(
-                JSON.stringify({
-                    name: user.name,
-                    wpm: 0,
-                    progress: 0,
-                })
-            );
-        }
-    });
     ws.on("error", console.error);
 
     ws.on("message", function message(data) {
         const json = JSON.parse(data.toString());
-        if (json.completeTime != undefined) {
-            endTime = Date.now() + 1000 * 15;
-            server.clients.forEach(function each(ws) {
-                ws.send(
-                    JSON.stringify({
-                        endTime: endTime,
-                    })
-                );
-            });
+
+        if (json.message != undefined) {
+            if (json.message == "state") {
+                ws.send(JSON.stringify(state));
+            } else if (json.message == "racers") {
+                ws.send(JSON.stringify(returnWithout(user.name)));
+            } else if (json.message == "started") {
+                const index: number = racers.findIndex(({ name }) => name == user.name);
+                if (index == -1) {
+                    racers.push({
+                        name: user.name,
+                        wpm: 0,
+                        progress: 0,
+                    });   
+                }
+            
+                server.clients.forEach(function each(client) {
+                    if (client !== ws && client.readyState === WebSocket.OPEN) {
+                        client.send(
+                            JSON.stringify({
+                                name: user.name,
+                                wpm: 0,
+                                progress: 0,
+                            })
+                        );
+                    }
+                });
+            }
             return;
         }
 
-        server.clients.forEach(function each(client) {
-            if (client !== ws && client.readyState === WebSocket.OPEN) {
-                client.send(
-                    JSON.stringify({
+        if (json.completedTime != undefined) {
+            server.clients.forEach(function each(ws) {
+                ws.send(JSON.stringify({name: user.name, wpm: json.wpm, completedTime: json.completedTime}));
+            });
+            if (state.endTime != 0) return;
+            state.endTime = Date.now() + 15 * 1000;
+            server.clients.forEach(function each(ws) {
+                ws.send(JSON.stringify(state));
+            });
+            return;
+        }
+        
+        if (json.progress != undefined) {
+            server.clients.forEach(function each(client) {
+                if (client !== ws && client.readyState === WebSocket.OPEN) {
+                    client.send(JSON.stringify({
                         name: user.name,
                         wpm: json.wpm,
                         progress: json.progress,
-                    })
-                );
-            }
-        });
+                    }));
+                }
+            });
+        }
     });
 });
 
-setInterval(StartRace, 5000);
-
-setInterval(() => {
-    if (endTime == 0) return;
-    if (Date.now() < endTime) return;
-    sentence = test.Sentence(30);
-    racing = false;
-    endTime = 0;
-}, 1000);
-
 function StartRace() {
+    if (started) return;
     if (server.clients.size < 2) return;
-    if (racing) return;
-    racing = true;
-    startTime = Date.now() + 1000 * 15;
+    if (racers.length < 2) return;
+    if (Date.now() < timeUntilRestart) return;
+    started = true;
+    state.sentence = Sentence(10);
+    state.startTime = Date.now() + 15 * 1000;
     server.clients.forEach(function each(ws) {
-        ws.send(
-            JSON.stringify({
-                time: startTime,
-                sentence: sentence,
-            })
-        );
+        ws.send(JSON.stringify(state));
+        ws.send(JSON.stringify(racers));
     });
 }
 
-function returnWithout(name: string): Racer[] {
-    let placeholder: Racer[] = racers;
-    const index: number = placeholder.findIndex(({ name }) => name == name);
-    if (index == -1) return placeholder;
-    placeholder.splice(index, 1);
-    return placeholder;
+function EndRace() {
+    if (!started) return;
+    if (Date.now() < state.endTime || state.endTime == 0) return;
+    timeUntilRestart = Date.now() + 5 * 1000;
+    started = false;
+    state.endTime = 0;
+    state.sentence = "";
+    state.startTime = 0;
+    server.clients.forEach(function each(ws) {
+        ws.send(JSON.stringify(state));
+    });
 }
+setInterval(StartRace, 5000);
+setInterval(EndRace, 5000);

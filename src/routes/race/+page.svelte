@@ -1,64 +1,6 @@
 <script lang="ts">
     import { onMount } from "svelte";
     import { getSocket } from '$lib/scripts/Socket';
-
-    type Racer = {
-        name: string;
-        wpm: number;
-        progress: number;
-    }
-
-    let socket: WebSocket
-    let complete = false;
-    let racers : Racer[] = [];
-    let sentence : string = "";
-    let word : string = "";
-    let wpm : number = 0;
-    let progress : number = 0;
-    let startTime : number = 0;
-    let currentTime : number = 0;
-    let endTime : number = 0;
-
-    onMount(() => {
-        socket = getSocket();
-
-        socket.addEventListener("message", (event) => {
-            let data = JSON.parse(event.data.toString());
-            if (data.endTime != undefined) {
-                endTime = data.endTime;
-                startTime = 0;
-                return;
-            }
-            if (Array.isArray(data)) {
-                racers = data;
-                return;
-            }
-            if (data.sentence != undefined) {
-                sentence = data.sentence.toString();
-                startTime = data.time;
-                return;
-            }
-            const index = racers.findIndex(({name}) => name == data.name);
-            if (index == -1) {
-                racers.push({
-                    name: data.name,
-                    wpm: data.wpm,
-                    progress: data.progress,
-                })
-            } else {
-                racers[index].wpm = data.wpm;
-                racers[index].progress = data.progress;
-            }
-        });
-    });
-
-    function Message() {
-        if (complete) return;
-        const json = {wpm: WordsPerMinute(), progress: Progress()};
-        if (socket == undefined) return;
-        socket.send(JSON.stringify(json));
-    }
-
     function Accuracy(): number {
         if (word.length == 0) return 0;
         let correct = 0;
@@ -72,7 +14,9 @@
     }
 
     function Progress() : number {
-        return Math.round((word.length * Accuracy() / sentence.length) * 100)
+        const placeholder = Math.round((Math.min(word.length, sentence.length) * Accuracy() / sentence.length) * 100)
+        if (Number.isNaN(placeholder)) return 0;
+        return placeholder;
     }
 
     function WordsPerMinute() : number {
@@ -98,34 +42,162 @@
         return false;
     }
 
-    function UpdateWordsPerMinute() {
+    type Racer = {
+        name: string,
+        wpm: number,
+        progress: number,
+    }
+
+    type Completers = {
+        name: string,
+        wpm: number,
+        completedTime: number,
+    }
+
+    let lastProgress = 0;
+    let socket: WebSocket
+    let racers : Racer[] = [];
+    let word : string = "";
+    let wpm : number = 0;
+    let progress : number = 0;
+
+    let startTime : number = 0;
+    let endTime: number = 0;
+    let sentence: string = "";
+    let completed: boolean = false;
+    let currentTime: number = Date.now();
+    let completers : Completers[] = []; 
+    let lastCompleted: number = 0;
+    onMount(() => {
+        socket = getSocket(location.hostname);
+
+        socket.addEventListener("message", (event) => {
+            let data = JSON.parse(event.data.toString());
+            console.log(data);
+
+            if (data.completedTime != undefined) {
+                const index = completers.findIndex(({name}) => name == data.name);
+                if (index == -1) {
+                    completers.push({
+                        name: data.name,
+                        wpm: data.wpm,
+                        completedTime: data.completedTime,
+                    })
+                    const index = completers.findIndex(({name}) => name == data.name);
+                    completers[index].wpm = data.wpm;
+                    completers[index].completedTime = data.completedTime;
+                } else {
+                    completers[index].wpm = data.wpm;
+                    completers[index].completedTime = data.completedTime;
+                }
+                completers.sort((firstItem, secondItem) =>  firstItem.completedTime - secondItem.completedTime);
+                return;
+            }
+
+            if (data.sentence != undefined) {
+                if (data.sentence == "") {
+                    word = "";
+                    sentence = "";
+                    completed = false;
+                    startTime = 0;
+                    endTime = 0;
+                    racers.forEach((Racer, index) => {
+                        let exists = false;
+                        completers.forEach((completers) => {if(completers.name == Racer.name) {exists = true}});
+                        if (!exists) {
+                            racers.splice(index, 1);
+                        }
+                    })
+                    completers = [];
+                } else {
+                    startTime = data.startTime;
+                    sentence = data.sentence;
+                    endTime = data.endTime;
+                }
+                return;
+            }
+
+            if (Array.isArray(data)) {
+                racers = data;
+                return;
+            }
+            
+            if (data.progress != undefined) {
+                const index = racers.findIndex(({name}) => name == data.name);
+                if (index == -1) {
+                    racers.push({
+                        name: data.name,
+                        wpm: data.wpm,
+                        progress: data.progress,
+                    })
+                    const index = racers.findIndex(({name}) => name == data.name);
+                    racers[index].wpm = data.wpm;
+                    racers[index].progress = data.progress;
+                } else {
+                    racers[index].wpm = data.wpm;
+                    racers[index].progress = data.progress;
+                }
+                return;
+            }
+        });
+
+        setTimeout(() => socket.send(JSON.stringify({message: "started"})), 100);
+        setTimeout(() => socket.send(JSON.stringify({message: "state"})), 100);
+        setTimeout(() => socket.send(JSON.stringify({message: "racers"})), 100);
+    });
+
+    function Message() {
+        if (completed) return;
+        const currentProgress = Progress();
+        if (currentProgress == lastProgress) return;
+        const data = {wpm: WordsPerMinute(), progress: currentProgress};
+        if (socket) {
+            socket.send(JSON.stringify(data));
+        }
+        lastProgress = currentProgress;
+    }
+
+    function Update() {
         currentTime = Date.now();
+        if (completed) return;
         wpm = WordsPerMinute();
         progress = Progress();
     }
 
     function HandleInput() {
-        if (complete == true) return;
-        if (Progress() >= 100) complete = true;
-        socket.send(JSON.stringify({
-            completedTime: Date.now(),
-        }));
+        if (completed) return;
+        if (lastCompleted > Date.now()) return;
+        if (Progress() < 100) return;
+        wpm = WordsPerMinute();
+        progress = Progress();
+        completed = true;
+        const json = {completedTime: Date.now(), wpm: WordsPerMinute()}
+        socket.send(JSON.stringify(json));
+        lastCompleted = Date.now() + 20 * 1000;
     }
 
-    setInterval(UpdateWordsPerMinute, 250);
+    setInterval(Update, 250);
     setInterval(Message, 1000);
 </script>
 
 <div class="flex justify-center">
-    <div class="flex flex-col w-1/2 gap-2">
+    <div class="flex flex-col justify-center w-1/2 gap-2">
         <div class="flex justify-center gap-2">
             {#key racers}
                 {#each racers as racer}
                     <div class="flex flex-col gap-2 w-32 bg-skin-accent rounded shadow-2xl p-2">
                         <p class="text-center text-2xl">{racer.name}</p>
                         <div class="flex flex-col gap-2 bg-skin-secondary_accent rounded shadow-2xl p-2">
-                            <p class="text-center">{racer.wpm}</p>
-                            <p class="text-center">{racer.progress}%</p>
+                            {#if racer.wpm}
+                                <p class="text-center">{racer.wpm}</p>
+                            {:else} 
+                                <p class="text-center">0</p>
+                            {/if}
+                            {#if racer.wpm}
+                                <p class="text-center">{racer.progress}%</p>
+                            {:else} 
+                                <p class="text-center">0%</p>
+                            {/if}
                         </div>
                     </div>
                 {/each}
@@ -138,11 +210,18 @@
                 </div>
             </div>
         </div>
-        {#key currentTime}
-            {#if currentTime > startTime}
-            {#if endTime != 0}
-                <p class="text-3xl text-center">Ending in: {Math.round((endTime - Date.now()) / 1000)}</p>
-            {/if}
+        {#if startTime == 0}
+            <div class="text-3xl text-center">Waiting for Players</div>
+        {:else if currentTime < startTime}
+            <p class="text-3xl text-center">Starting in: {Math.round((startTime - currentTime) / 1000)}</p>
+        {:else if endTime != 0 && currentTime < endTime}
+            <p class="text-3xl text-center">Ending in: {Math.round((endTime - currentTime) / 1000)}</p>
+        {/if}
+        {#if currentTime < startTime}
+            <div class="text-3xl flex-wrap flex blur-lg">
+                Sneaky little rascal attempting to deceive, eh? Don't think I won't catch you. Cheating's not the way to go, my friend. Play fair and test your mettle instead.
+            </div>
+        {:else}
             <div class="text-3xl flex-wrap flex">
                 {#key word}
                     {#each sentence as character, i}
@@ -169,7 +248,7 @@
                                 <span>{character}</span>
                             {/if}
                         {:else if character == " "}
-                            <span>&nbsp;</span>
+                            <span class="text-red-700 bg-red-300">&nbsp;</span>
                         {:else}
                             <span class="text-red-700 bg-red-300">
                                 {character}
@@ -178,15 +257,7 @@
                     {/each}
                 {/key}
             </div>
-            {:else}
-                {#if startTime != 0}
-                    <p class="text-3xl text-center">Starting in: {Math.round((startTime - Date.now()) / 1000)}</p>
-                {/if}
-                <div class="text-3xl flex-wrap flex blur-lg">
-                    {sentence}
-                </div>
-            {/if}
-        {/key}
+        {/if}
         <input
         bind:value={word}
         type="text"
@@ -196,5 +267,36 @@
         class="shadow-2xl p-2 rounded bg-skin-accent"
         on:input={() => HandleInput()}
         />
+        {#if completers.length > 0}
+            <div class="flex justify-center gap-10">
+                {#if typeof completers[1] !== 'undefined'}
+                    <div class="mt-auto">
+                        <p class="text-2xl text-center">{completers[1].name}</p>
+                        <div class="bg-gradient-to-r from-yellow-400 to-yellow-600 h-[175px] w-[105px] rounded-xl">
+                            <div class="text-2xl text-center">{completers[1].wpm}</div>
+                            <div class="text-2xl relative top-[20%] text-center">2nd</div>
+                        </div>
+                    </div>
+                {/if}
+                {#if typeof completers[0] !== 'undefined'}
+                    <div>
+                        <p class="text-2xl text-center">{completers[0].name}</p>
+                        <div class="bg-gradient-to-r from-yellow-300 to-yellow-500 h-[250px] w-[125px] rounded-xl">
+                            <div class="text-2xl text-center">{completers[0].wpm}</div>
+                            <div class="text-2xl relative top-[20%] text-center">1st</div>
+                        </div>
+                    </div>
+                {/if}
+                {#if typeof completers[2] !== 'undefined'}
+                    <div class="mt-auto">
+                        <p class="text-2xl text-center">{completers[2].name}</p>
+                        <div class="bg-gradient-to-r from-yellow-500 to-yellow-700 h-[125px] w-[105px] rounded-xl">
+                            <div class="text-2xl text-center">{completers[2].wpm}</div>
+                            <div class="text-2xl relative top-[20%] text-center">3rd</div>
+                        </div>
+                    </div>
+                {/if}
+            </div>
+        {/if}
     </div>
 </div>

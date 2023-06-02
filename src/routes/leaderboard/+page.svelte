@@ -18,44 +18,6 @@
     return arr;
 }
 </script>
-<!--
-<div class="flex justify-center">
-    <div class="flex flex-col w-1/3">
-        <div class="flex justify-between">
-            <div class="flex gap-2">
-                <p>#</p>
-                <p>Name</p>
-            </div>
-            <p>Score (WPM)</p>
-            <p>Date</p>
-        </div>
-        <div class="flex justify-between">
-            <div>
-                {#each scores.tests as score, i}
-                <div class="flex gap-2">
-                    <p>{i + 1}.</p>
-                    <p>{score.user?.name}</p>
-                </div>
-                {/each}
-            </div>
-            <div>
-                {#each scores.tests as score}
-                <div>
-                    <p>{score.WPS}</p>
-                </div>
-                {/each}
-            </div>
-            <div>
-                {#each scores.tests as score}
-                <div>
-                    <p>{score.date.toLocaleDateString()}</p>
-                </div>
-                {/each}
-            </div>
-        </div>
-    </div>
-</div>
--->
 
 <div class="flex justify-center">
     <div class="flex flex-col w-1/3">
