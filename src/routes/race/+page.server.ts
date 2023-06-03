@@ -125,13 +125,13 @@ function StartRace() {
     state.startTime = Date.now() + 15 * 1000;
     server.clients.forEach(function each(ws) {
         ws.send(JSON.stringify(state));
-        ws.send(JSON.stringify(racers));
     });
 }
 
 function EndRace() {
     if (!started) return;
     if (Date.now() < state.endTime || state.endTime == 0) return;
+    if (Date.now() < timeUntilRestart) return;
     timeUntilRestart = Date.now() + 5 * 1000;
     started = false;
     state.endTime = 0;

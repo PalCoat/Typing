@@ -65,9 +65,10 @@
     let endTime: number = 0;
     let sentence: string = "";
     let completed: boolean = false;
-    let currentTime: number = Date.now();
+    let currentTime: number = 0;
     let completers : Completers[] = []; 
     let lastCompleted: number = 0;
+    let lastRequest: number = 0;
     onMount(() => {
         socket = getSocket(location.hostname);
 
@@ -113,6 +114,10 @@
                     startTime = data.startTime;
                     sentence = data.sentence;
                     endTime = data.endTime;
+                    if (Date.now() > lastRequest) {
+                        socket.send(JSON.stringify({message: "racers"}));
+                        lastRequest = Date.now() + 5 * 1000;
+                    }
                 }
                 return;
             }
@@ -142,8 +147,10 @@
         });
 
         setTimeout(() => socket.send(JSON.stringify({message: "started"})), 100);
-        setTimeout(() => socket.send(JSON.stringify({message: "state"})), 100);
-        setTimeout(() => socket.send(JSON.stringify({message: "racers"})), 100);
+        setTimeout(() => socket.send(JSON.stringify({message: "state"})), 150);
+        setTimeout(() => socket.send(JSON.stringify({message: "racers"})), 200);
+        setInterval(Update, 250);
+        setInterval(Message, 1000);
     });
 
     function Message() {
@@ -176,8 +183,6 @@
         lastCompleted = Date.now() + 20 * 1000;
     }
 
-    setInterval(Update, 250);
-    setInterval(Message, 1000);
 </script>
 
 <div class="flex justify-center">
@@ -214,14 +219,13 @@
             <div class="text-3xl text-center">Waiting for Players</div>
         {:else if currentTime < startTime}
             <p class="text-3xl text-center">Starting in: {Math.round((startTime - currentTime) / 1000)}</p>
-        {:else if endTime != 0 && currentTime < endTime}
-            <p class="text-3xl text-center">Ending in: {Math.round((endTime - currentTime) / 1000)}</p>
-        {/if}
-        {#if currentTime < startTime}
             <div class="text-3xl flex-wrap flex blur-lg">
                 Sneaky little rascal attempting to deceive, eh? Don't think I won't catch you. Cheating's not the way to go, my friend. Play fair and test your mettle instead.
             </div>
-        {:else}
+        {:else if currentTime > startTime}
+            {#if currentTime < endTime}
+                <p class="text-3xl text-center">Ending in: {Math.round((endTime - currentTime) / 1000)}</p>
+            {/if}
             <div class="text-3xl flex-wrap flex">
                 {#key word}
                     {#each sentence as character, i}
