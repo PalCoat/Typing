@@ -54,9 +54,23 @@ server.on("connection", async function connection(ws, req) {
 
     if (!user) return;
 
+    /*let isAlive: boolean = true;
+
+    setInterval(() => {
+        if (isAlive === false) {
+            racers = returnWithout(user.name);
+            return ws.terminate();
+        }
+        isAlive = false;}
+    ,15000);*/
+
     ws.on("error", console.error);
 
     ws.on("message", function message(data) {
+        /*if (data.toString() == "ping") {
+            isAlive = true;
+            return;
+        }*/
         const json = JSON.parse(data.toString());
 
         if (json.message != undefined) {
@@ -141,5 +155,6 @@ function EndRace() {
         ws.send(JSON.stringify(state));
     });
 }
+
 setInterval(StartRace, 5000);
 setInterval(EndRace, 5000);

@@ -109,6 +109,10 @@
                             racers.splice(index, 1);
                         }
                     })
+                    if (Date.now() > lastRequest) {
+                        socket.send(JSON.stringify({message: "racers"}));
+                        lastRequest = Date.now() + 2 * 1000;
+                    }
                     completers = [];
                 } else {
                     startTime = data.startTime;
@@ -116,7 +120,7 @@
                     endTime = data.endTime;
                     if (Date.now() > lastRequest) {
                         socket.send(JSON.stringify({message: "racers"}));
-                        lastRequest = Date.now() + 5 * 1000;
+                        lastRequest = Date.now() + 2 * 1000;
                     }
                 }
                 return;
@@ -152,6 +156,11 @@
         setInterval(Update, 250);
         setInterval(Message, 1000);
     });
+
+    /*setInterval(() => {
+        if (socket == undefined) return;
+        socket.send("ping");
+    }, 7500);*/
 
     function Message() {
         if (completed) return;
