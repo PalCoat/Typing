@@ -69,12 +69,13 @@
     let completers : Completers[] = []; 
     let lastCompleted: number = 0;
     let lastRequest: number = 0;
+
     onMount(() => {
         socket = getSocket(location.hostname);
 
         socket.addEventListener("message", (event) => {
             let data = JSON.parse(event.data.toString());
-            console.log(data);
+            //console.log(data);
 
             if (data.completedTime != undefined) {
                 const index = completers.findIndex(({name}) => name == data.name);
@@ -102,13 +103,6 @@
                     completed = false;
                     startTime = 0;
                     endTime = 0;
-                    racers.forEach((Racer, index) => {
-                        let exists = false;
-                        completers.forEach((completers) => {if(completers.name == Racer.name) {exists = true}});
-                        if (!exists) {
-                            racers.splice(index, 1);
-                        }
-                    })
                     if (Date.now() > lastRequest) {
                         socket.send(JSON.stringify({message: "racers"}));
                         lastRequest = Date.now() + 2 * 1000;
@@ -157,10 +151,11 @@
         setInterval(Message, 1000);
     });
 
-    /*setInterval(() => {
-        if (socket == undefined) return;
-        socket.send("ping");
-    }, 7500);*/
+    setInterval(() => {
+        if (sentence == "") {
+            socket.send(JSON.stringify({message: "started"}))
+        }
+    }, 5000) 
 
     function Message() {
         if (completed) return;
@@ -189,9 +184,8 @@
         completed = true;
         const json = {completedTime: Date.now(), wpm: WordsPerMinute()}
         socket.send(JSON.stringify(json));
-        lastCompleted = Date.now() + 20 * 1000;
+        lastCompleted = Date.now() + 25 * 1000;
     }
-
 </script>
 
 <div class="flex justify-center">

@@ -24,6 +24,12 @@ type State = {
     endTime: number,
 }
 
+type Completers = {
+    name: string,
+    wpm: number,
+    completedTime: number,
+}
+
 export const load = (async ({ locals }) => {
     const racer = await prisma.user.findFirst({
         where: { session: locals.session },
@@ -33,6 +39,7 @@ export const load = (async ({ locals }) => {
 
 
 let racers: Racer[] = [];
+let completers: Completers[] = [];
 
 let state: State = {
     startTime : 0,
@@ -54,23 +61,9 @@ server.on("connection", async function connection(ws, req) {
 
     if (!user) return;
 
-    /*let isAlive: boolean = true;
-
-    setInterval(() => {
-        if (isAlive === false) {
-            racers = returnWithout(user.name);
-            return ws.terminate();
-        }
-        isAlive = false;}
-    ,15000);*/
-
     ws.on("error", console.error);
 
     ws.on("message", function message(data) {
-        /*if (data.toString() == "ping") {
-            isAlive = true;
-            return;
-        }*/
         const json = JSON.parse(data.toString());
 
         if (json.message != undefined) {
@@ -105,6 +98,14 @@ server.on("connection", async function connection(ws, req) {
 
         if (json.completedTime != undefined) {
             server.clients.forEach(function each(ws) {
+                const index: number = completers.findIndex(({ name }) => name == user.name);
+                if (index == -1) {
+                    completers.push({
+                        name: user.name,
+                        wpm: json.wpm,
+                        completedTime: json.completedTime,
+                    });   
+                }
                 ws.send(JSON.stringify({name: user.name, wpm: json.wpm, completedTime: json.completedTime}));
             });
             if (state.endTime != 0) return;
@@ -135,6 +136,7 @@ function StartRace() {
     if (racers.length < 2) return;
     if (Date.now() < timeUntilRestart) return;
     started = true;
+    completers = [];
     state.sentence = Sentence(10);
     state.startTime = Date.now() + 15 * 1000;
     server.clients.forEach(function each(ws) {
@@ -151,6 +153,17 @@ function EndRace() {
     state.endTime = 0;
     state.sentence = "";
     state.startTime = 0;
+    let remove: string[] = [];
+    racers.forEach((Racer) => {
+        let exist = false;
+        completers.forEach(({name}) => {
+            if (Racer.name == name) exist = true;
+        })
+        if (!exist) remove.push(Racer.name);
+    })
+    remove.forEach((name) => {
+        racers = returnWithout(name);
+    });
     server.clients.forEach(function each(ws) {
         ws.send(JSON.stringify(state));
     });
