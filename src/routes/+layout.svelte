@@ -42,3 +42,20 @@
         </div>
 </div>
 <slot/>
+
+<div class="flex justify-center">
+    <div class="absolute bottom-0 m-2 w-[75%] h-36 bg-skin-accent rounded flex justify-center p-10 gap-10">
+        <div class="flex flex-col justify-center">
+            <p class="text-center italic">Made with ❤️ by Coath</p>
+            <p>Contact: pal.david.miskolczi@gmail.com</p>
+        </div>
+        <div class="flex flex-col justify-center">
+            <p class="italic">Icons by various authors</p>
+            <p>Icon by <a href="https://freeicons.io/profile/714">Raj Dev</a> on <a href="https://freeicons.io">freeicons.io</a></p>
+            <p>Icon by <a class="link_pro" href="https://freeicons.io/basic-ui-elements-2/profile-icon-1161">icon king1</a>
+                on <a href="https://freeicons.io">freeicons.io</a></p>
+            <p>Icon by <a class="link_pro" href="https://freeicons.io/university/trophy-achievement-champion-winner-cups-icon-133030">Hilmy Abiyyu Asad</a>
+                on <a href="https://freeicons.io">freeicons.io</a></p>
+        </div>
+    </div>
+</div>
