@@ -21,6 +21,7 @@ const words = [
 
 /**
  * @param {number} length
+ * @returns {string}
  */
 export function Sentence(length) {
     let previousWord = "";
@@ -50,6 +51,7 @@ function RandomWord(previousWord) {
 /**
  * @param {number} min
  * @param {number} max
+ * @returns {number}
  */
 function GetRandomInt(min, max) {
     min = Math.ceil(min);
