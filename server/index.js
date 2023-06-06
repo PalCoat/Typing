@@ -1,54 +1,34 @@
-/*import { prisma } from "./src/lib/scripts/Database";
 import WebSocket, { WebSocketServer } from "ws";
-import { Sentence } from "./src/lib/scripts/Script";
+import { Sentence } from "../src/lib/scripts/Scripter.js";
 
-function returnWithout(username: string): Racer[] {
-    let placeholder: Racer[] = racers.slice();
-    const index: number = placeholder.findIndex(({ name }) => name == username);
+function returnWithout(username) {
+    let placeholder = racers.slice();
+    const index = placeholder.findIndex(({ name }) => name == username);
     if (index == -1) return placeholder;
     placeholder.splice(index, 1);
     return placeholder;
 }
 
-type Racer = {
-    name: string,
-    wpm: number,
-    progress: number,
-}
+let racers = [];
+let completers = [];
 
-type State = {
-    startTime: number,
-    sentence: string,
-    endTime: number,
-}
-
-type Completers = {
-    name: string,
-    wpm: number,
-    completedTime: number,
-}
-
-let racers: Racer[] = [];
-let completers: Completers[] = [];
-
-let state: State = {
+let state = {
     startTime : 0,
     sentence : "",
     endTime : 0,
 }
 
-let started : boolean = false;
-let timeUntilRestart: number = 0;
+let started = false;
+let timeUntilRestart = 0;
 
+import { handler } from '../build/handler.js'
 import { createServer } from 'http';
-import { Server } from 'ws';
+import express from 'express'
 
-const port = 80;
-const server = createServer();
+const app = express()
+const server = createServer(app);
 
-const wss = new Server({ server });
-
-//const server: WebSocketServer = new WebSocketServer({ port: 80 });
+const wss = new WebSocketServer({ server });
 
 wss.on("connection", async function connection(ws, req) {
     const user = await prisma.user.findFirst({
@@ -70,7 +50,7 @@ wss.on("connection", async function connection(ws, req) {
             } else if (json.message == "racers") {
                 ws.send(JSON.stringify(returnWithout(user.name)));
             } else if (json.message == "started") {
-                const index: number = racers.findIndex(({ name }) => name == user.name);
+                const index = racers.findIndex(({ name }) => name == user.name);
                 if (index == -1) {
                     racers.push({
                         name: user.name,
@@ -96,7 +76,7 @@ wss.on("connection", async function connection(ws, req) {
 
         if (json.completedTime != undefined) {
             wss.clients.forEach(function each(client) {
-                const index: number = completers.findIndex(({ name }) => name == user.name);
+                const index = completers.findIndex(({ name }) => name == user.name);
                 if (index == -1) {
                     completers.push({
                         name: user.name,
@@ -128,6 +108,10 @@ wss.on("connection", async function connection(ws, req) {
     });
 });
 
+app.use(handler);
+
+server.listen()
+
 function StartRace() {
     if (started) return;
     if (wss.clients.size < 2) return;
@@ -151,7 +135,7 @@ function EndRace() {
     state.endTime = 0;
     state.sentence = "";
     state.startTime = 0;
-    let remove: string[] = [];
+    let remove = [];
     racers.forEach((Racer) => {
         let exist = false;
         completers.forEach(({name}) => {
@@ -168,4 +152,4 @@ function EndRace() {
 }
 
 setInterval(StartRace, 5000);
-setInterval(EndRace, 5000);*/
+setInterval(EndRace, 5000);

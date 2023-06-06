@@ -3,7 +3,7 @@ import { prisma } from "$lib/scripts/Database";
 import { redirect } from "@sveltejs/kit";
 import WebSocket, { WebSocketServer } from "ws";
 import { Sentence } from "$lib/scripts/Script";
-
+/*
 function returnWithout(username: string): Racer[] {
     let placeholder: Racer[] = racers.slice();
     const index: number = placeholder.findIndex(({ name }) => name == username);
@@ -29,7 +29,7 @@ type Completers = {
     wpm: number,
     completedTime: number,
 }
-
+*/
 export const load = (async ({ locals }) => {
     const racer = await prisma.user.findFirst({
         where: { session: locals.session },
@@ -37,7 +37,7 @@ export const load = (async ({ locals }) => {
     if (racer == null) throw redirect(303, "/signin");
 }) satisfies PageServerLoad;
 
-
+/*
 let racers: Racer[] = [];
 let completers: Completers[] = [];
 
@@ -170,4 +170,4 @@ function EndRace() {
 }
 
 setInterval(StartRace, 5000);
-setInterval(EndRace, 5000);
+setInterval(EndRace, 5000);*/

@@ -1,8 +1,8 @@
 let socketInstance : WebSocket;
 
-export function getSocket(location: string) {
+export function getSocket(location: string, port: string) {
   if (!socketInstance || socketInstance == undefined) {
-    socketInstance = new WebSocket("ws://" + location + ":81");
+    socketInstance = new WebSocket("ws://" + location + ":" + port);
   }
   return socketInstance;
 }
