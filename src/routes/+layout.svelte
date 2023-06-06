@@ -14,7 +14,7 @@
     <div class="flex flex-row justify-start gap-2 shadow-lg m-2 p-2 rounded text-xl bg-skin-accent">
             <a class="flex flex-row gap-2 shadow-2xl px-2 rounded bg-skin-secondary_accent" href="/">
                 <Icon/>
-                <p class="align-middle leading-10">Typist</p>
+                <p class="align-middle leading-10">Typister</p>
             </a>
             <a class="flex flex-row gap-2 shadow-2xl px-2 rounded bg-skin-secondary_accent" href="/leaderboard">
                 <Trophy/>
