@@ -50,7 +50,7 @@ export class Authentication {
 
             cookies.set("session", session, {
                 path: "/",
-                maxAge: 60 * 60,
+                maxAge: 60 * 60 * 5,
                 httpOnly: true,
                 sameSite: "strict",
                 secure: false,
@@ -102,7 +102,7 @@ export class Authentication {
                 httpOnly: true,
                 sameSite: "strict",
                 secure: false,
-                maxAge: 60 * 60,
+                maxAge: 60 * 60 * 5,
             });
 
             return { success: true, message: "Register success" };

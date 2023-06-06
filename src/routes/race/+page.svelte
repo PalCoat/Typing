@@ -1,6 +1,6 @@
 <script lang="ts">
     import { onMount } from "svelte";
-    import { getSocket } from '$lib/scripts/Socket';
+    import { getSocket } from '$lib/scripts/Socket'; 
     function Accuracy(): number {
         if (word.length == 0) return 0;
         let correct = 0;
@@ -109,9 +109,17 @@
                     }
                     completers = [];
                 } else {
-                    startTime = data.startTime;
+                    if (data.startTime > Date.now()) {
+                        startTime = Date.now() + 15 * 1000;
+                    } else {
+                        startTime = data.startTime;
+                    }
                     sentence = data.sentence;
-                    endTime = data.endTime;
+                    if (data.endTime > Date.now()) {
+                        endTime = Date.now() + 15 * 1000;
+                    } else {
+                        endTime = data.endTime;
+                    }
                     if (Date.now() > lastRequest) {
                         socket.send(JSON.stringify({message: "racers"}));
                         lastRequest = Date.now() + 2 * 1000;
@@ -143,19 +151,19 @@
                 return;
             }
         });
-
         setTimeout(() => socket.send(JSON.stringify({message: "started"})), 100);
         setTimeout(() => socket.send(JSON.stringify({message: "state"})), 150);
         setTimeout(() => socket.send(JSON.stringify({message: "racers"})), 200);
         setInterval(Update, 250);
         setInterval(Message, 1000);
-    });
 
-    setInterval(() => {
-        if (sentence == "") {
-            socket.send(JSON.stringify({message: "started"}))
-        }
-    }, 5000) 
+        setInterval(() => {
+            if (socket == undefined) socket = getSocket(location.hostname);
+            if (sentence == "") {
+                socket.send(JSON.stringify({message: "started"}))
+            }
+        }, 5000) 
+    });
 
     function Message() {
         if (completed) return;
