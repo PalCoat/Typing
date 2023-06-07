@@ -50,7 +50,7 @@ let started: boolean = false;
 let timeUntilRestart: number = 0;
 
 const server: WebSocketServer = new WebSocketServer({ port: 8080 });
-console.log(server.address);
+console.log(server.address.toString());
 
 server.on("connection", async function connection(ws, req) {
     const user = await prisma.user.findFirst({
