@@ -19,7 +19,6 @@ export const handle: Handle = async ({ event, resolve }) => {
 };
 
 import { prisma } from "$lib/scripts/Database";
-import { redirect } from "@sveltejs/kit";
 import WebSocket, { WebSocketServer } from "ws";
 import { Sentence } from "$lib/scripts/Script";
 
