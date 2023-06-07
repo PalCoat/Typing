@@ -22,7 +22,7 @@ export const actions: Actions = {
                 path: "/",
                 httpOnly: true,
                 sameSite: "strict",
-                secure: true,
+                secure: false,
                 maxAge: 60 * 60,
             });
             throw redirect(303, "/");
