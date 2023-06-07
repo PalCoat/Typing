@@ -16,13 +16,13 @@ export const load = (async ({ locals }) => {
 export const actions: Actions = {
     Logout: async ({ cookies, locals }) => {
         if ((await authentication.Logout(locals.session)).success) {
-            cookies.delete("session");
+            cookies.delete("session", {path: "/"});
             
             cookies.set("session", "", {
                 path: "/",
                 httpOnly: true,
                 sameSite: "strict",
-                secure: false,
+                secure: true,
                 maxAge: 60 * 60,
             });
             throw redirect(303, "/");

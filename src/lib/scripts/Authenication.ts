@@ -53,7 +53,7 @@ export class Authentication {
                 maxAge: 60 * 60 * 5,
                 httpOnly: true,
                 sameSite: "strict",
-                secure: false,
+                secure: true,
             });
             return { success: true, message: "Login success" };
         } catch {
@@ -101,7 +101,7 @@ export class Authentication {
                 path: "/",
                 httpOnly: true,
                 sameSite: "strict",
-                secure: false,
+                secure: true,
                 maxAge: 60 * 60 * 5,
             });
 

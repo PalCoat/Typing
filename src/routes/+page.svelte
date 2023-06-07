@@ -33,7 +33,7 @@
         fetch("?/Submit", {
             method: "POST",
             body: JSON.stringify(formData),
-        })
+        }).then().catch()
         ResetSentence();
     }
 
