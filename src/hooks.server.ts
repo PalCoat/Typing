@@ -59,7 +59,7 @@ let state: State = {
 
 let started: boolean = false;
 let timeUntilRestart: number = 0;
-
+console.log("debug");
 const server: WebSocketServer = new WebSocketServer({ port: 8080 });
 
 server.on("connection", async function connection(ws, req) {
@@ -153,6 +153,11 @@ server.on("connection", async function connection(ws, req) {
 });
 
 function StartRace() {
+    if (server != undefined) {
+        console.log("hello");
+    } else {
+        console.log("beans")
+    }
     if (started) return;
     if (server.clients.size < 2) return;
     if (racers.length < 2) return;
