@@ -41,13 +41,15 @@
             {/if}
         </div>
 </div>
+
 <slot/>
 
 <div class="flex justify-center">
-    <div class="bottom-0 m-2 mt-24 w-[75%] h-36 bg-skin-accent rounded flex justify-center p-10 gap-10">
+    <div class="bottom-0 m-3 w-[75%] h-36 bg-skin-accent rounded flex justify-center p-10 gap-10">
         <div class="flex flex-col justify-center">
-            <p class="text-center italic">Made with ❤️ by Coath</p>
-            <p>Contact: pal.david.miskolczi@gmail.com</p>
+            <p class="text-center italic">Made with ❤️ by Pal</p>
+            <p class="text-center">Contact me:</p>
+            <p>pal.david.miskolczi@gmail.com</p>
         </div>
         <div class="flex flex-col justify-center">
             <p class="italic">Icons by various authors</p>

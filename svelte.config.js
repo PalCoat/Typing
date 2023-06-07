@@ -1,11 +1,5 @@
 import adapter from "@sveltejs/adapter-node";
 import { vitePreprocess } from "@sveltejs/kit/vite";
-//import { webSocketServer } from './websocketserver';
-/*
-		vite: {
-			plugins: [webSocketServer]
-		},
-*/
 
 /** @type {import('@sveltejs/kit').Config} */
 const config = {

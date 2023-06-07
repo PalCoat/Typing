@@ -1,7 +1,5 @@
 <script lang="ts">
     import "../../app.css";
-    import Trophy from "$lib/components/trophy.svelte";
-    import Profile from "$lib/components/profile.svelte";
 
     import type { PageServerData } from './$types';
     export let data: PageServerData;
@@ -19,7 +17,7 @@
 }
 </script>
 
-<div class="flex justify-center">
+<div class="flex justify-center min-h-[65vh]">
     <div class="flex flex-col w-1/3">
         <div class="flex p-2">
             <p class="basis-[5%]">#</p>

@@ -87,7 +87,7 @@
     setInterval(UpdateWordsPerMinute, 250);
 </script>
 
-<div class="flex justify-center">
+<div class="flex justify-center min-h-[65vh]">
     <div class="flex flex-col gap-5 w-1/2">
         <div class="flex justify-center">
             <div class="flex justify-center text-3xl w-full">

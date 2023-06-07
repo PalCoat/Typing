@@ -18,7 +18,6 @@ const words: string[] = [
     "new",
 ];
 
-
 export function Sentence(length: number): string {
     let previousWord: string = "";
     let sentence: string = RandomWord(previousWord);

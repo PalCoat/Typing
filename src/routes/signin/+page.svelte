@@ -9,8 +9,8 @@
     }
 </script>
 
-<div class="flex flex-row justify-center align-middle">
-    <div class="shadow-2xl rounded bg-skin-accent">
+<div class="flex flex-row justify-center align-middle min-h-[65vh]">
+    <div class="shadow-2xl rounded bg-skin-accent h-52">
         <form class="flex flex-col gap-5 p-10" method="POST" action="?/Login">
             <input type="text" placeholder="Username" class="shadow-lg bg-skin-secondary_accent" name="username">
             <input type="password" placeholder="Password" class="shadow-lg bg-skin-secondary_accent" name="password">
