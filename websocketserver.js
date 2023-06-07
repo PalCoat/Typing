@@ -1,57 +1,36 @@
-import type { PageServerLoad } from "../$types";
-import { prisma } from "$lib/scripts/Database";
-import { redirect } from "@sveltejs/kit";
 import WebSocket, { WebSocketServer } from "ws";
-import { Sentence } from "$lib/scripts/Script";
+import { Sentence } from "./src/lib/scripts/Scripter.js";
 
-function returnWithout(username: string): Racer[] {
-    let placeholder: Racer[] = racers.slice();
-    const index: number = placeholder.findIndex(({ name }) => name == username);
+function returnWithout(username) {
+    let placeholder = racers.slice();
+    const index = placeholder.findIndex(({ name }) => name == username);
     if (index == -1) return placeholder;
     placeholder.splice(index, 1);
     return placeholder;
 }
 
-type Racer = {
-    name: string;
-    wpm: number;
-    progress: number;
-};
+let racers = [];
+let completers = [];
 
-type State = {
-    startTime: number;
-    sentence: string;
-    endTime: number;
-};
-
-type Completers = {
-    name: string;
-    wpm: number;
-    completedTime: number;
-};
-
-export const load = (async ({ locals }) => {
-    const racer = await prisma.user.findFirst({
-        where: { session: locals.session },
-    });
-    if (racer == null) throw redirect(303, "/signin");
-}) satisfies PageServerLoad;
-
-let racers: Racer[] = [];
-let completers: Completers[] = [];
-
-let state: State = {
+let state = {
     startTime: 0,
     sentence: "",
     endTime: 0,
 };
 
-let started: boolean = false;
-let timeUntilRestart: number = 0;
+let started = false;
+let timeUntilRestart = 0;
 
-const server: WebSocketServer = new WebSocketServer({ port: 8080 });
+import { handler } from "../build/handler.js";
+import { createServer } from "http";
+import express from "express";
 
-server.on("connection", async function connection(ws, req) {
+const app = express();
+const server = createServer(app);
+
+const wss = new WebSocketServer({ server });
+
+wss.on("connection", async function connection(ws, req) {
     const user = await prisma.user.findFirst({
         where: {
             session: req.headers.cookie?.split("=")[1],
@@ -71,9 +50,7 @@ server.on("connection", async function connection(ws, req) {
             } else if (json.message == "racers") {
                 ws.send(JSON.stringify(returnWithout(user.name)));
             } else if (json.message == "started") {
-                const index: number = racers.findIndex(
-                    ({ name }) => name == user.name
-                );
+                const index = racers.findIndex(({ name }) => name == user.name);
                 if (index == -1) {
                     racers.push({
                         name: user.name,
@@ -82,7 +59,7 @@ server.on("connection", async function connection(ws, req) {
                     });
                 }
 
-                server.clients.forEach(function each(client) {
+                wss.clients.forEach(function each(client) {
                     if (client !== ws && client.readyState === WebSocket.OPEN) {
                         client.send(
                             JSON.stringify({
@@ -98,8 +75,8 @@ server.on("connection", async function connection(ws, req) {
         }
 
         if (json.completedTime != undefined) {
-            server.clients.forEach(function each(client) {
-                const index: number = completers.findIndex(
+            wss.clients.forEach(function each(client) {
+                const index = completers.findIndex(
                     ({ name }) => name == user.name
                 );
                 if (index == -1) {
@@ -119,14 +96,14 @@ server.on("connection", async function connection(ws, req) {
             });
             if (state.endTime != 0) return;
             state.endTime = Date.now() + 15 * 1000;
-            server.clients.forEach(function each(client) {
+            wss.clients.forEach(function each(client) {
                 client.send(JSON.stringify(state));
             });
             return;
         }
 
         if (json.progress != undefined) {
-            server.clients.forEach(function each(client) {
+            wss.clients.forEach(function each(client) {
                 if (client !== ws && client.readyState === WebSocket.OPEN) {
                     client.send(
                         JSON.stringify({
@@ -141,16 +118,20 @@ server.on("connection", async function connection(ws, req) {
     });
 });
 
+app.use(handler);
+
+server.listen();
+
 function StartRace() {
     if (started) return;
-    if (server.clients.size < 2) return;
+    if (wss.clients.size < 2) return;
     if (racers.length < 2) return;
     if (Date.now() < timeUntilRestart) return;
     started = true;
     completers = [];
     state.sentence = Sentence(30);
     state.startTime = Date.now() + 15 * 1000;
-    server.clients.forEach(function each(client) {
+    wss.clients.forEach(function each(client) {
         client.send(JSON.stringify(state));
     });
 }
@@ -164,7 +145,7 @@ function EndRace() {
     state.endTime = 0;
     state.sentence = "";
     state.startTime = 0;
-    let remove: string[] = [];
+    let remove = [];
     racers.forEach((Racer) => {
         let exist = false;
         completers.forEach(({ name }) => {
@@ -175,7 +156,7 @@ function EndRace() {
     remove.forEach((name) => {
         racers = returnWithout(name);
     });
-    server.clients.forEach(function each(client) {
+    wss.clients.forEach(function each(client) {
         client.send(JSON.stringify(state));
     });
 }

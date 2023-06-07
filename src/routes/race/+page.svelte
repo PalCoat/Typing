@@ -71,7 +71,7 @@
     let lastRequest: number = 0;
 
     onMount(() => {
-        socket = getSocket(location.hostname, location.port);
+        socket = getSocket(location.hostname, "8080");
 
         socket.addEventListener("message", (event) => {
             let data = JSON.parse(event.data.toString());
@@ -158,7 +158,7 @@
         setInterval(Message, 1000);
 
         setInterval(() => {
-            if (socket == undefined) socket = getSocket(location.hostname, location.port);
+            if (socket == undefined) socket = getSocket(location.hostname, "8080");
             if (sentence == "") {
                 socket.send(JSON.stringify({message: "started"}))
             }

@@ -44,7 +44,7 @@
 <slot/>
 
 <div class="flex justify-center">
-    <div class="absolute bottom-0 m-2 w-[75%] h-36 bg-skin-accent rounded flex justify-center p-10 gap-10">
+    <div class="bottom-0 m-2 mt-24 w-[75%] h-36 bg-skin-accent rounded flex justify-center p-10 gap-10">
         <div class="flex flex-col justify-center">
             <p class="text-center italic">Made with ❤️ by Coath</p>
             <p>Contact: pal.david.miskolczi@gmail.com</p>
