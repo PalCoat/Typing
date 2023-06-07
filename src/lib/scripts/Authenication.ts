@@ -52,7 +52,7 @@ export class Authentication {
                 path: "/",
                 maxAge: 60 * 60 * 5,
                 httpOnly: true,
-                sameSite: "strict",
+                sameSite: "lax",
                 secure: false,
             });
             return { success: true, message: "Login success" };
@@ -100,7 +100,7 @@ export class Authentication {
             cookies.set("session", user.session, {
                 path: "/",
                 httpOnly: true,
-                sameSite: "strict",
+                sameSite: "lax",
                 secure: false,
                 maxAge: 60 * 60 * 5,
             });
@@ -111,16 +111,16 @@ export class Authentication {
         }
     }
 
-    async Logout(sessionId : string): Promise<AuthenticationResult> {
+    async Logout(sessionId: string): Promise<AuthenticationResult> {
         try {
             const session = new UIDRandomizer().generate_unique_id();
             const result = await prisma.user.update({
                 where: {
-                    session: sessionId
+                    session: sessionId,
                 },
                 data: {
-                    session: session
-                }
+                    session: session,
+                },
             });
             return { success: true, message: "Sign out success" };
         } catch {
