@@ -158,7 +158,6 @@
         setInterval(Message, 1000);
 
         setInterval(() => {
-            console.log(location.hostname)
             if (socket == undefined) socket = getSocket(location.hostname, "8080");
             if (sentence == "") {
                 socket.send(JSON.stringify({message: "started"}))

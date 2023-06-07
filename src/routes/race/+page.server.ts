@@ -1,5 +1,13 @@
 import type { PageServerLoad } from "../$types";
 import { prisma } from "$lib/scripts/Database";
+export const load = (async ({ locals }) => {
+    const racer = await prisma.user.findFirst({
+        where: { session: locals.session },
+    });
+    if (racer == null) throw redirect(303, "/signin");
+}) satisfies PageServerLoad;
+/* 
+import { prisma } from "$lib/scripts/Database";
 import { redirect } from "@sveltejs/kit";
 import WebSocket, { WebSocketServer } from "ws";
 import { Sentence } from "$lib/scripts/Script";
@@ -30,12 +38,7 @@ type Completers = {
     completedTime: number;
 };
 
-export const load = (async ({ locals }) => {
-    const racer = await prisma.user.findFirst({
-        where: { session: locals.session },
-    });
-    if (racer == null) throw redirect(303, "/signin");
-}) satisfies PageServerLoad;
+
 
 let racers: Racer[] = [];
 let completers: Completers[] = [];
@@ -182,3 +185,4 @@ function EndRace() {
 
 setInterval(StartRace, 5000);
 setInterval(EndRace, 5000);
+ */
