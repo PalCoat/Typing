@@ -17,3 +17,7 @@ body {
     color: var(--color-text);
     min-height: 100vh;
 }
+
+html {
+    background-color: var(--color-fill);
+}

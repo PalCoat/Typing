@@ -52,7 +52,7 @@ export class Authentication {
                 path: "/",
                 maxAge: 60 * 60 * 5,
                 httpOnly: true,
-                sameSite: "lax",
+                sameSite: "strict",
                 secure: false,
             });
             return { success: true, message: "Login success" };
@@ -100,7 +100,7 @@ export class Authentication {
             cookies.set("session", user.session, {
                 path: "/",
                 httpOnly: true,
-                sameSite: "lax",
+                sameSite: "strict",
                 secure: false,
                 maxAge: 60 * 60 * 5,
             });

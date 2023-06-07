@@ -32,7 +32,7 @@ export const actions: Actions = {
         const result = prisma.user.delete({
             where: { session: locals.session },
         });
-        cookies.delete("session");
+        cookies.delete("session", {path: "/"});
         throw redirect(303, "/");
     },
 };
