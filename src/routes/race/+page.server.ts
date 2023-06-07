@@ -141,6 +141,7 @@ server.on("connection", async function connection(ws, req) {
 });
 
 function StartRace() {
+    console.log(server.address);
     if (started) return;
     if (server.clients.size < 2) return;
     if (racers.length < 2) return;
@@ -178,8 +179,6 @@ function EndRace() {
         client.send(JSON.stringify(state));
     });
 }
-
-console.log(server.address);
 
 setInterval(StartRace, 5000);
 setInterval(EndRace, 5000);
