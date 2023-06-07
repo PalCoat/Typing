@@ -141,7 +141,6 @@ server.on("connection", async function connection(ws, req) {
 });
 
 function StartRace() {
-    console.log(server.address());
     if (started) return;
     if (server.clients.size < 2) return;
     if (racers.length < 2) return;
