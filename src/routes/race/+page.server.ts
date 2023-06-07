@@ -50,8 +50,6 @@ let started: boolean = false;
 let timeUntilRestart: number = 0;
 
 const server: WebSocketServer = new WebSocketServer({ port: 8080 });
-console.log(server.address.toString());
-
 server.on("connection", async function connection(ws, req) {
     const user = await prisma.user.findFirst({
         where: {
@@ -180,6 +178,8 @@ function EndRace() {
         client.send(JSON.stringify(state));
     });
 }
+
+console.log(server.address);
 
 setInterval(StartRace, 5000);
 setInterval(EndRace, 5000);
