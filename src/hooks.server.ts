@@ -1,4 +1,7 @@
 import type { Handle } from "@sveltejs/kit";
+import { prisma } from "$lib/scripts/Database";
+import WebSocket, { WebSocketServer } from "ws";
+import { Sentence } from "$lib/scripts/Script";
 
 export const handle: Handle = async ({ event, resolve }) => {
     if (event.request.method === "OPTIONS") {
@@ -18,36 +21,6 @@ export const handle: Handle = async ({ event, resolve }) => {
     return response;
 };
 
-import { prisma } from "$lib/scripts/Database";
-import WebSocket, { WebSocketServer } from "ws";
-import { Sentence } from "$lib/scripts/Script";
-
-function returnWithout(username: string): Racer[] {
-    let placeholder: Racer[] = racers.slice();
-    const index: number = placeholder.findIndex(({ name }) => name == username);
-    if (index == -1) return placeholder;
-    placeholder.splice(index, 1);
-    return placeholder;
-}
-
-type Racer = {
-    name: string;
-    wpm: number;
-    progress: number;
-};
-
-type State = {
-    startTime: number;
-    sentence: string;
-    endTime: number;
-};
-
-type Completers = {
-    name: string;
-    wpm: number;
-    completedTime: number;
-};
-
 let racers: Racer[] = [];
 let completers: Completers[] = [];
 
@@ -56,10 +29,11 @@ let state: State = {
     sentence: "",
     endTime: 0,
 };
-
 let started: boolean = false;
 let timeUntilRestart: number = 0;
-const server: WebSocketServer = new WebSocketServer({ port: 8080 });
+const server: WebSocketServer = new WebSocketServer({
+    port: process.env.PORT ? Number(process.env.PORT) : 8080,
+});
 
 server.on("connection", async function connection(ws, req) {
     const user = await prisma.user.findFirst({
@@ -151,6 +125,14 @@ server.on("connection", async function connection(ws, req) {
     });
 });
 
+function returnWithout(username: string): Racer[] {
+    let placeholder: Racer[] = racers.slice();
+    const index: number = placeholder.findIndex(({ name }) => name == username);
+    if (index == -1) return placeholder;
+    placeholder.splice(index, 1);
+    return placeholder;
+}
+
 function StartRace() {
     if (started) return;
     if (server.clients.size < 2) return;
@@ -192,3 +174,21 @@ function EndRace() {
 
 setInterval(StartRace, 5000);
 setInterval(EndRace, 5000);
+
+type Racer = {
+    name: string;
+    wpm: number;
+    progress: number;
+};
+
+type State = {
+    startTime: number;
+    sentence: string;
+    endTime: number;
+};
+
+type Completers = {
+    name: string;
+    wpm: number;
+    completedTime: number;
+};
