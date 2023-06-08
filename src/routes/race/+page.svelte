@@ -196,7 +196,7 @@
     }
 </script>
 
-<div class="flex justify-center min-h-[65vh]">
+<div class="flex justify-center min-h-[55vh]">
     <div class="flex flex-col justify-start w-1/2 gap-2">
         <div class="flex justify-center gap-2">
             {#key racers}

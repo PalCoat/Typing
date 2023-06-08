@@ -17,7 +17,7 @@
 }
 </script>
 
-<div class="flex justify-center min-h-[65vh]">
+<div class="flex justify-center min-h-[55vh]">
     <div class="flex flex-col w-1/3">
         <div class="flex p-2">
             <p class="basis-[5%]">#</p>

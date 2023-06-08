@@ -4,7 +4,7 @@
     export let data: PageServerData;
 </script>
 
-<div class="flex justify-center text-xl min-h-[65vh]">
+<div class="flex justify-center text-xl min-h-[55vh]">
     <div class="flex-col">
         <div class="flex justify-center">
             {data?.name}
