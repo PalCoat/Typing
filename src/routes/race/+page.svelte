@@ -151,9 +151,9 @@
                 return;
             }
         });
-        setTimeout(() => socket.send(JSON.stringify({message: "started"})), 100);
-        setTimeout(() => socket.send(JSON.stringify({message: "state"})), 150);
-        setTimeout(() => socket.send(JSON.stringify({message: "racers"})), 200);
+        setTimeout(() => socket.send(JSON.stringify({message: "started"})), 1000);
+        setTimeout(() => socket.send(JSON.stringify({message: "state"})), 1500);
+        setTimeout(() => socket.send(JSON.stringify({message: "racers"})), 2000);
         setInterval(Update, 250);
         setInterval(Message, 1000);
 
