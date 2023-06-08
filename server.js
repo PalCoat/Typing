@@ -10,7 +10,7 @@ const server = createServer(app);
 
 const wss = new WebSocketServer({ server });
 wss.on("connection", (socket) => {
-    socket.emit("Hello");
+    socket.send("Hello");
 });
 console.log("haj");
 app.use(handler);
