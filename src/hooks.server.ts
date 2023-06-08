@@ -20,7 +20,7 @@ export const handle: Handle = async ({ event, resolve }) => {
     response.headers.append("Access-Control-Allow-Origin", `*`);
     return response;
 };
-/*
+/* 
 let racers: Racer[] = [];
 let completers: Completers[] = [];
 

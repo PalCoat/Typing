@@ -8,12 +8,6 @@ const port = process.env.PORT ?? 3001;
 const app = express();
 const server = createServer(app);
 
-server.listen(port, () => {
-    console.log("Running on port " + port);
-});
-
-app.get("/", (req, res) => res.send("Hello World!"));
-
 const wss = new WebSocketServer({ server });
 wss.on("connection", (socket) => {
     socket.send("Hello");
