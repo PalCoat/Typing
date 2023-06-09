@@ -1,7 +1,7 @@
 <script lang="ts">
     import { onMount } from "svelte";
     import ReconnectingEventSource from "reconnecting-eventsource";
-    import { State } from "$lib/scripts/States";
+    import { State, Command } from "$lib/scripts/States";
     import type { PageServerData } from './$types';
     import { browser } from "$app/environment";
     import { onDestroy } from "svelte";
@@ -84,15 +84,19 @@
             if (message.state) {
                 state = message.state;
             }
-        };
-
-        eventSource.onopen = (event) => {
-            SendMessage("State", {});
+            if (message.timeUntilStart) {
+                timeToStart = Date.now() + message.timeUntilStart;
+            }
+            if (message.timeUntilEnd) {
+                timeToEnd = Date.now() + message.timeUntilEnd;
+            }
+            if (message.racers) {
+                racers = message.racers;
+            }
         };
 
         const interval = setInterval(() => {
             if (eventSource.readyState != ReconnectingEventSource.OPEN) return;
-            SendMessage("State", {});
         }, 5000)
 
         onDestroy(() => {
@@ -101,15 +105,18 @@
         });
     }
 
-    function SendMessage(action: string, message: any) {
-        fetch("?/" + action, {
+    function SendMessage(message: any) {
+        fetch("/race", {
             method: "POST",
             body: JSON.stringify(message),
+            headers: {
+                'content-type': 'application/json'
+            }
         }).then().catch()
     }
 
     function SendPerformance() {
-        SendMessage("Performance",{
+        SendMessage({
             name: data.name,
             wpm: WordsPerMinute(),
             progress: Progress()

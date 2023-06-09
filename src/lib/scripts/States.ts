@@ -5,3 +5,10 @@ export enum State {
     Ending,
     Ended,
 }
+
+export enum Command {
+    Performance,
+    Remove,
+    Add,
+    State,
+}
