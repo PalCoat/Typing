@@ -26,13 +26,10 @@
         const WPS: number = WordsPerMinute();
         lastWordsPerMinute = WPS;
         lastAccuracy = Math.round(Accuracy() * 100);
-        const formData = {
-            WPS,
-        };
 
         fetch("?/Submit", {
             method: "POST",
-            body: JSON.stringify(formData),
+            body: JSON.stringify({WPS: WPS}),
         }).then().catch()
         ResetSentence();
     }

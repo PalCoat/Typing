@@ -4,7 +4,7 @@ const submit: Submit = new Submit();
 
 export const actions: Actions = {
     Submit: async ({ request, locals }) => {
-        const data = JSON.parse(await request.text());
+        const data = await request.json();
         submit.SubmitTest(data.WPS, locals);
     },
 } satisfies Actions;

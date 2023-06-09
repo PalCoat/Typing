@@ -1,6 +1,12 @@
 <script lang="ts">
     import { onMount } from "svelte";
-    import { getSocket } from '$lib/scripts/Socket'; 
+    import ReconnectingEventSource from "reconnecting-eventsource";
+    import { State } from "$lib/scripts/States";
+    import type { PageServerData } from './$types';
+    import { browser } from "$app/environment";
+    import { onDestroy } from "svelte";
+    export let data: PageServerData;
+
     function Accuracy(): number {
         if (word.length == 0) return 0;
         let correct = 0;
@@ -20,12 +26,12 @@
     }
 
     function WordsPerMinute() : number {
+        if (state != State.Racing) return 0;
         if (word.length < 5) return 0;
-        if (startTime == 0) return 0;
         let length = Math.min(word.length, sentence.length);
         let placeholder = Math.round(
             ((length * Accuracy()) /
-                ((Date.now() - startTime) / 1000) /
+                ((Date.now() - timeToStart) / 1000) /
                 4.7) *
                 60
         );
@@ -54,145 +60,68 @@
         completedTime: number,
     }
 
-    let lastProgress = 0;
-    let socket: WebSocket
+    let state: State = State.Waiting;
     let racers : Racer[] = [];
+    let timeToStart : number;
+    let timeToEnd: number = 0;
+    let sentence: string = "";
+    let completers : Completers[] = [];
+
     let word : string = "";
     let wpm : number = 0;
     let progress : number = 0;
 
-    let startTime : number = 0;
-    let endTime: number = 0;
-    let sentence: string = "";
-    let completed: boolean = false;
-    let currentTime: number = 0;
-    let completers : Completers[] = []; 
-    let lastCompleted: number = 0;
-    let lastRequest: number = 0;
+    if (browser) {
+        let eventSource: ReconnectingEventSource;
 
-    onMount(() => {
-        socket = getSocket(location.hostname);
+        eventSource = new ReconnectingEventSource("/race");
 
-        socket.addEventListener("message", (event) => {
-            let data = JSON.parse(event.data.toString());
-            //console.log(data);
-
-            if (data.completedTime != undefined) {
-                const index = completers.findIndex(({name}) => name == data.name);
-                if (index == -1) {
-                    completers.push({
-                        name: data.name,
-                        wpm: data.wpm,
-                        completedTime: data.completedTime,
-                    })
-                    const index = completers.findIndex(({name}) => name == data.name);
-                    completers[index].wpm = data.wpm;
-                    completers[index].completedTime = data.completedTime;
-                } else {
-                    completers[index].wpm = data.wpm;
-                    completers[index].completedTime = data.completedTime;
-                }
-                completers.sort((firstItem, secondItem) =>  firstItem.completedTime - secondItem.completedTime);
-                return;
+        eventSource.onmessage = (event) => {
+            console.log(event.data);
+            const message = JSON.parse(event.data);
+            if (!message) return;
+            console.log(message);
+            if (message.state) {
+                state = message.state;
             }
+        };
 
-            if (data.sentence != undefined) {
-                if (data.sentence == "") {
-                    word = "";
-                    sentence = "";
-                    completed = false;
-                    startTime = 0;
-                    endTime = 0;
-                    if (Date.now() > lastRequest) {
-                        socket.send(JSON.stringify({message: "racers"}));
-                        lastRequest = Date.now() + 2 * 1000;
-                    }
-                    completers = [];
-                } else {
-                    if (data.startTime > Date.now()) {
-                        startTime = Date.now() + 15 * 1000;
-                    } else {
-                        startTime = data.startTime;
-                    }
-                    sentence = data.sentence;
-                    if (data.endTime > Date.now()) {
-                        endTime = Date.now() + 15 * 1000;
-                    } else {
-                        endTime = data.endTime;
-                    }
-                    if (Date.now() > lastRequest) {
-                        socket.send(JSON.stringify({message: "racers"}));
-                        lastRequest = Date.now() + 2 * 1000;
-                    }
-                }
-                return;
-            }
+        eventSource.onopen = (event) => {
+            SendMessage("State", {});
+        };
 
-            if (Array.isArray(data)) {
-                racers = data;
-                return;
-            }
-            
-            if (data.progress != undefined) {
-                const index = racers.findIndex(({name}) => name == data.name);
-                if (index == -1) {
-                    racers.push({
-                        name: data.name,
-                        wpm: data.wpm,
-                        progress: data.progress,
-                    })
-                    const index = racers.findIndex(({name}) => name == data.name);
-                    racers[index].wpm = data.wpm;
-                    racers[index].progress = data.progress;
-                } else {
-                    racers[index].wpm = data.wpm;
-                    racers[index].progress = data.progress;
-                }
-                return;
-            }
+        const interval = setInterval(() => {
+            if (eventSource.readyState != ReconnectingEventSource.OPEN) return;
+            SendMessage("State", {});
+        }, 5000)
+
+        onDestroy(() => {
+            clearInterval(interval);
+            eventSource.close();
         });
-        setTimeout(() => socket.send(JSON.stringify({message: "started"})), 1000);
-        setTimeout(() => socket.send(JSON.stringify({message: "state"})), 1500);
-        setTimeout(() => socket.send(JSON.stringify({message: "racers"})), 2000);
-        setInterval(Update, 250);
-        setInterval(Message, 1000);
-
-        setInterval(() => {
-            if (socket == undefined) socket = getSocket(location.hostname);
-            if (sentence == "") {
-                socket.send(JSON.stringify({message: "started"}))
-            }
-        }, 5000) 
-    });
-
-    function Message() {
-        if (completed) return;
-        const currentProgress = Progress();
-        if (currentProgress == lastProgress) return;
-        const data = {wpm: WordsPerMinute(), progress: currentProgress};
-        if (socket) {
-            socket.send(JSON.stringify(data));
-        }
-        lastProgress = currentProgress;
     }
 
-    function Update() {
-        currentTime = Date.now();
-        if (completed) return;
+    function SendMessage(action: string, message: any) {
+        fetch("?/" + action, {
+            method: "POST",
+            body: JSON.stringify(message),
+        }).then().catch()
+    }
+
+    function SendPerformance() {
+        SendMessage("Performance",{
+            name: data.name,
+            wpm: WordsPerMinute(),
+            progress: Progress()
+        })
+    }
+
+    function UpdateClientStates() {
         wpm = WordsPerMinute();
         progress = Progress();
     }
 
     function HandleInput() {
-        if (completed) return;
-        if (lastCompleted > Date.now()) return;
-        if (Progress() < 100) return;
-        wpm = WordsPerMinute();
-        progress = Progress();
-        completed = true;
-        const json = {completedTime: Date.now(), wpm: WordsPerMinute()}
-        socket.send(JSON.stringify(json));
-        lastCompleted = Date.now() + 25 * 1000;
     }
 </script>
 
@@ -219,23 +148,23 @@
                 {/each}
             {/key}
             <div class="flex flex-col gap-2 w-32 bg-skin-accent rounded shadow-2xl p-2">
-                <p class="text-center text-2xl">You</p>
+                <p class="text-center text-2xl">{data?.name}</p>
                 <div class="flex flex-col gap-2 bg-skin-secondary_accent rounded shadow-2xl p-2">
                     <p class="text-center">{wpm}</p>
                     <p class="text-center">{progress}%</p>
                 </div>
             </div>
         </div>
-        {#if startTime == 0}
+        {#if state == State.Waiting}
             <div class="text-3xl text-center">Waiting for Players</div>
-        {:else if currentTime < startTime}
-            <p class="text-3xl text-center">Starting in: {Math.round((startTime - currentTime) / 1000)}</p>
+        {:else if timeToStart > Date.now()}
+            <p class="text-3xl text-center">Starting in: {Math.round((timeToStart - Date.now()) / 1000)}</p>
             <div class="text-3xl flex-wrap flex blur-lg">
                 Sneaky little rascal attempting to deceive, eh? Don't think I won't catch you. Cheating's not the way to go, my friend. Play fair and test your mettle instead.
             </div>
-        {:else if currentTime > startTime}
-            {#if currentTime < endTime}
-                <p class="text-3xl text-center">Ending in: {Math.round((endTime - currentTime) / 1000)}</p>
+        {:else}
+            {#if timeToEnd > Date.now()}
+                <p class="text-3xl text-center">Ending in: {Math.round((timeToEnd - Date.now()) / 1000)}</p>
             {/if}
             <div class="text-3xl flex-wrap flex">
                 {#key word}

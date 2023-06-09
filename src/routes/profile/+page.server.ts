@@ -1,21 +1,20 @@
 import type { Actions } from "./$types";
 import type { PageServerLoad } from "./$types";
 import { prisma } from "$lib/scripts/Database";
-import { Authentication } from "$lib/scripts/Authenication";
-const authentication: Authentication = new Authentication();
+import { Logout } from "$lib/scripts/Authenication";
 import { redirect } from "@sveltejs/kit";
 
 export const load = (async ({ locals }) => {
-    if (!locals.session) throw redirect(302, "/");
     const user = await prisma.user.findFirst({
         where: { session: locals.session },
     });
+    if (!user) throw redirect(302, "/");
     return { name: user?.name };
 }) satisfies PageServerLoad;
 
 export const actions: Actions = {
     Logout: async ({ cookies, locals }) => {
-        if ((await authentication.Logout(locals.session)).success) {
+        if ((await Logout(locals.session)).success) {
             cookies.delete("session", {path: "/"});
             
             cookies.set("session", "", {
