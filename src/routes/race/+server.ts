@@ -28,11 +28,13 @@ export const GET: RequestHandler = async ({ locals }) => {
 
     const stream = new ReadableStream({
         start(controller) {
+            console.log("Added " + user.name);
             streams[locals.session!] = {controller, name: user.name};
             AddRacer(locals.session);
             SendState(locals.session);
         },
         cancel() {
+            console.log("Removed " + user.name);
             const index = racers.findIndex((temp) => temp.name == streams[locals.session].name);
             racers.splice(index, 1);
             RemoveRacer(locals.session);
@@ -95,14 +97,20 @@ function TryStartingRace() {
     if (racers.length < 2) return;
     if (state != State.Waiting) return;
 
+    console.log(racers);
     state = State.Starting;
     sentence = Sentence(sentenceLength);
     timeToStart = Date.now() + 15000;
-    SendToEverySessionExcept("", {
-        state,
-        timeUntilStart: 15000,
-        sentence
-    });
+    for (const sessionIteration in streams) {
+        if (sessionIteration) {
+            SendToSession(sessionIteration, {
+                state,
+                timeUntilStart: 15000,
+                sentence,
+                racers: WithoutRacer(sessionIteration)
+            });
+        }
+    }
 }
 
 function TryEndingRace() {
@@ -111,11 +119,17 @@ function TryEndingRace() {
 
     state = State.Waiting;
     timeToEnd = Date.now() + 15000;
-    SendToEverySessionExcept("", {
-        state,
-        timeUntilEnd: 15000,
-        racers,
-    });
+    
+    for (const sessionIteration in streams) {
+        if (sessionIteration) {
+            SendToSession(sessionIteration, {
+                state,
+                timeUntilStart: 15000,
+                sentence,
+                racers: WithoutRacer(sessionIteration)
+            });
+        }
+    }
 }
 
 function AddRacer(session: string) {
@@ -137,17 +151,10 @@ function RemoveRacer(session: string) {
 
 function WithoutRacer(session: string): {name: string, wpm: number, progress: number}[] {
     let temp = racers;
-    const index = racers.findIndex((temp) => temp.name == streams[session!].name);
+    const index = racers.findIndex(({name}) => name == streams[session!].name);
+    if (index -1) return temp;
     temp.splice(index, 1);
     return temp;
-}
-
-function SendRacers() {
-    for (const session in streams) {
-        SendToSession(session, {
-            racers: WithoutRacer(streams[session!].name)
-        })
-    }
 }
 
 const encoder = new TextEncoder();

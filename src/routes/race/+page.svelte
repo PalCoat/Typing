@@ -68,6 +68,10 @@
     let wpm : number = 0;
     let progress : number = 0;
 
+    let currentTime: number = 0;
+
+    setInterval(() => currentTime = Date.now(), 100);
+
     if (browser) {
         let eventSource: ReconnectingEventSource;
 
@@ -89,8 +93,20 @@
             if (message.racers) {
                 racers = message.racers;
             }
+            if (message.sentence) {
+                sentence = message.sentence;
+            }
             if (message.command == Command.Add) {
-                racers.push({name: message.name, wpm: 0, progress: 0})
+                const index = racers.findIndex(({name}) => name == message.name);
+                if (index -1) return;
+                racers.push({name: message.name, wpm: 0, progress: 0});
+                //Something wonky with how svelte updates object arrays
+                //A value has to change for it to register and render
+                racers[racers.length - 1].name = message.name;
+            } else if (message.command == Command.Remove) {
+                const index = racers.findIndex(({name}) => name == message.name);
+                if (index -1) return;
+                racers.slice(index, 1);
             }
         };
 
@@ -131,10 +147,10 @@
     }
 </script>
 
-<div class="flex justify-center min-h-[55vh]">
+<div class="flex justify-center">
     <div class="flex flex-col justify-start w-1/2 gap-2">
         <div class="flex justify-center gap-2">
-            {#key racers}
+            {#key racers != undefined}
                 {#each racers as racer}
                     <div class="flex flex-col gap-2 w-32 bg-skin-accent rounded shadow-2xl p-2">
                         <p class="text-center text-2xl">{racer.name}</p>
@@ -163,14 +179,14 @@
         </div>
         {#if state == State.Waiting}
             <div class="text-3xl text-center">Waiting for Players</div>
-        {:else if timeToStart > Date.now()}
-            <p class="text-3xl text-center">Starting in: {Math.round((timeToStart - Date.now()) / 1000)}</p>
+        {:else if timeToStart > currentTime}
+            <p class="text-3xl text-center">Starting in: {Math.round((timeToStart - currentTime) / 1000)}</p>
             <div class="text-3xl flex-wrap flex blur-lg">
                 Sneaky little rascal attempting to deceive, eh? Don't think I won't catch you. Cheating's not the way to go, my friend. Play fair and test your mettle instead.
             </div>
         {:else}
-            {#if timeToEnd > Date.now()}
-                <p class="text-3xl text-center">Ending in: {Math.round((timeToEnd - Date.now()) / 1000)}</p>
+            {#if timeToEnd > currentTime}
+                <p class="text-3xl text-center">Ending in: {Math.round((timeToEnd - currentTime) / 1000)}</p>
             {/if}
             <div class="text-3xl flex-wrap flex">
                 {#key word}
