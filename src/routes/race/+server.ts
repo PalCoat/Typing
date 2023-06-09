@@ -12,7 +12,6 @@ let timeToEnd: number = 0;
 let sentence: string = "";
 
 let racers : {name: string, wpm: number, progress: number}[] = [];
-let sessions: {session: string, name: string}[] = [];
 
 setInterval(() => {
     TryStartingRace();
@@ -29,18 +28,15 @@ export const GET: RequestHandler = async ({ locals }) => {
 
     const stream = new ReadableStream({
         start(controller) {
-            streams[locals.session!] = controller;
-            AddRacer(locals.session, user.name);
-            sessions.push({session: locals.session, name: user.name});
+            streams[locals.session!] = {controller, name: user.name};
+            AddRacer(locals.session);
             SendState(locals.session);
         },
         cancel() {
-            delete streams[locals.session!];
-            let index = sessions.findIndex((temp) => temp.session == locals.session);
-            const name = sessions[index].name;
-            index = racers.findIndex((temp) => temp.name == name);
+            const index = racers.findIndex((temp) => temp.name == streams[locals.session].name);
             racers.splice(index, 1);
-            RemoveRacer(locals.session, user.name);
+            RemoveRacer(locals.session);
+            delete streams[locals.session!];
         },
     });
 
@@ -54,7 +50,11 @@ export const GET: RequestHandler = async ({ locals }) => {
 export const POST = (async ({ request, locals }) => {
     const data = await request.json();
     if (data.command == Command.Performance) {
-        SendToEverySessionExcept(locals.session, await request.json())
+        SendToEverySessionExcept(locals.session, {
+            name: streams[locals.session!].name,
+            wpm: data.wpm,
+            progress: data.progress
+        });
     }
     return json(undefined);
 }) satisfies RequestHandler;
@@ -118,57 +118,48 @@ function TryEndingRace() {
     });
 }
 
-function AddRacer(session: string, name: string) {
+function AddRacer(session: string) {
     const racer = {
         command: Command.Add,
-        name,
+        name: streams[session!].name,
     };
     SendToEverySessionExcept(session, racer);
     racers.push({name: racer.name, wpm: 0, progress: 0});
 }
 
-function RemoveRacer(session: string, name: string) {
+function RemoveRacer(session: string) {
     const racer = {
         command: Command.Remove,
-        name,
+        name: streams[session!].name,
     };
     SendToEverySessionExcept(session, racer);
-    const index = racers.findIndex((temp) => temp.name == name);
-    racers.splice(index, 1);
 }
 
 function WithoutRacer(session: string): {name: string, wpm: number, progress: number}[] {
     let temp = racers;
-    let index = sessions.findIndex((temp) => temp.session == session);
-    const name = sessions[index].name;
-    index = racers.findIndex((temp) => temp.name == name);
+    const index = racers.findIndex((temp) => temp.name == streams[session!].name);
     temp.splice(index, 1);
     return temp;
 }
 
-// function SendRacers() {
-//     for (const session in streams) {
-//         const name = sessions.find((temp) => temp.session == session)?.name;
-//         if (name == undefined) return;
-//         SendToSession(session, {
-//             racers: WithoutRacer(name)
-//         })
-//     }
-// }
+function SendRacers() {
+    for (const session in streams) {
+        SendToSession(session, {
+            racers: WithoutRacer(streams[session!].name)
+        })
+    }
+}
 
 const encoder = new TextEncoder();
 function SendToEverySessionExcept(session: string, message: any) {
-    for (const session in streams) {
-        if (session != session) {
-            SendToSession(session, message);
+    for (const sessionIteration in streams) {
+        if (sessionIteration != session) {
+            SendToSession(sessionIteration, message);
         }
     }
 }
 
 function SendToSession(session: string, message: any) {
-    const controller = streams[session];
-    if (!controller) return;
-
-    const encoded = encoder.encode(JSON.stringify(message));
-    streams[session].enqueue(encoded);
+    const encoded = encoder.encode("data: " + JSON.stringify(message) + "\n\n");
+    streams[session!].controller.enqueue(encoded);
 }

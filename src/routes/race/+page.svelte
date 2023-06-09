@@ -26,7 +26,6 @@
     }
 
     function WordsPerMinute() : number {
-        if (state != State.Racing) return 0;
         if (word.length < 5) return 0;
         let length = Math.min(word.length, sentence.length);
         let placeholder = Math.round(
@@ -35,9 +34,7 @@
                 4.7) *
                 60
         );
-        if (Number.isFinite(placeholder) && !Number.isNaN(placeholder)) {
-            return placeholder;
-        }
+        if (Number.isFinite(placeholder) && !Number.isNaN(placeholder)) return placeholder;
         return 0;
     }
 
@@ -77,7 +74,6 @@
         eventSource = new ReconnectingEventSource("/race");
 
         eventSource.onmessage = (event) => {
-            console.log(event.data);
             const message = JSON.parse(event.data);
             if (!message) return;
             console.log(message);
@@ -93,10 +89,14 @@
             if (message.racers) {
                 racers = message.racers;
             }
+            if (message.command == Command.Add) {
+                racers.push({name: message.name, wpm: 0, progress: 0})
+            }
         };
 
         const interval = setInterval(() => {
             if (eventSource.readyState != ReconnectingEventSource.OPEN) return;
+            SendPerformance();
         }, 5000)
 
         onDestroy(() => {
@@ -117,7 +117,6 @@
 
     function SendPerformance() {
         SendMessage({
-            name: data.name,
             wpm: WordsPerMinute(),
             progress: Progress()
         })

@@ -1,5 +1,4 @@
-import { writable } from 'svelte/store';
-export let streams: Record<string, ReadableStreamDefaultController>;
+export let streams: Record<string, {controller: ReadableStreamDefaultController, name: string}>;
 
 export function Initialize() {
     streams = {};

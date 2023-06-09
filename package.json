@@ -3,7 +3,6 @@
     "version": "0.0.1",
     "private": true,
     "scripts": {
-        "start": "node ./server",
         "dev": "vite dev",
         "build": "vite build",
         "host": "vite dev --host --port 80",
@@ -16,7 +15,6 @@
         "@sveltejs/adapter-node": "^1.2.4",
         "@sveltejs/kit": "^1.5.0",
         "@types/node": "^20.1.5",
-        "@types/ws": "^8.5.4",
         "autoprefixer": "^10.4.14",
         "postcss": "^8.4.23",
         "prisma": "^4.13.0",
@@ -30,9 +28,7 @@
     "type": "module",
     "dependencies": {
         "@prisma/client": "^4.13.0",
-        "@types/express": "^4.17.17",
-        "reconnecting-eventsource": "^1.6.2",
-        "ws": "^8.13.0"
+        "reconnecting-eventsource": "^1.6.2"
     },
     "engines": {
         "node": ">=18"
