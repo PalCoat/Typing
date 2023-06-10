@@ -6,7 +6,7 @@ export async function SubmitScore(wpm: number, locals: App.Locals) {
             where: { session: locals.session },
         });
         if (!user) return;
-        const previousScore = await prisma.score.findUnique({
+        const previousScore = await prisma.score.findMany({
             where: {
                 userId: user.id,
             },
@@ -21,10 +21,10 @@ export async function SubmitScore(wpm: number, locals: App.Locals) {
             });
             return;
         }
-        if (previousScore.wpm > wpm) return;
+        if (previousScore[0].wpm > wpm) return;
         await prisma.score.update({
             where: {
-                id: previousScore.id,
+                id: previousScore[0].id,
             },
             data: {
                 date: new Date(),
