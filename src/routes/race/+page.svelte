@@ -136,7 +136,7 @@
         }
       }
       if (message.timeForComplete) {
-        const index = completers.findIndex(({ name }) => name == message.name);
+        let index = completers.findIndex(({ name }) => name == message.name);
         if (index != -1) return;
         completers.push({
           name: message.name,
@@ -147,6 +147,11 @@
         //A value has to change for it to register and render
         completers[completers.length - 1].name = message.name;
         completers = insertionSort(completers);
+        index = racers.findIndex(({ name }) => name == message.name);
+        if (index != -1) {
+          racers[index].wpm = 0;
+          racers[index].progress = 0;
+        }
       }
       if (message.completers) {
         completers = insertionSort(message.completers);
