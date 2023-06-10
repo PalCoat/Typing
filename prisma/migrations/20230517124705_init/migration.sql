@@ -1,7 +1,0 @@
--- CreateTable
-CREATE TABLE "Test" (
-    "id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
-    "length" INTEGER NOT NULL,
-    "time" REAL NOT NULL,
-    "date" DATETIME NOT NULL
-);
