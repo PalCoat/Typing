@@ -19,7 +19,7 @@ export async function Login(
     }
 
     try {
-        const result = await prisma.user.findFirst({
+        const result = await prisma.user.findUnique({
             where: { name: username },
         });
 

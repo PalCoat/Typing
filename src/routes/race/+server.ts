@@ -25,33 +25,37 @@ setInterval(() => {
 
 
 export const GET: RequestHandler = async ({ locals }) => {
-    const user = await prisma.user.findFirst({
-        where: { session: locals.session },
-    });
+    try {
+        const user = await prisma.user.findUniqueOrThrow({
+            where: { session: locals.session },
+        });
 
-    if (!user) throw redirect(302, "/signin");
+        if (!user) throw redirect(302, "/signin");
 
-    //Maybe check if that user is already playing
+        //Maybe check if that user is already playing
 
-    const stream = new ReadableStream({
-        start(controller) {
-            streams[locals.session!] = {controller, name: user.name};
-            AddRacer(locals.session);
-            SendState(locals.session);
-        },
-        cancel() {
-            const index = racers.findIndex((temp) => temp.name == streams[locals.session].name);
-            racers.splice(index, 1);
-            RemoveRacer(locals.session);
-            delete streams[locals.session!];
-        },
-    });
+        const stream = new ReadableStream({
+            start(controller) {
+                streams[locals.session!] = {controller, name: user.name};
+                AddRacer(locals.session);
+                SendState(locals.session);
+            },
+            cancel() {
+                const index = racers.findIndex((temp) => temp.name == streams[locals.session].name);
+                racers.splice(index, 1);
+                RemoveRacer(locals.session);
+                delete streams[locals.session!];
+            },
+        });
 
-    return new Response(stream, {
-        headers: {
-            "content-type": "text/event-stream",
-        },
-    });
+        return new Response(stream, {
+            headers: {
+                "content-type": "text/event-stream",
+            },
+        });
+    } catch {
+        return new Response();
+    }
 };
 
 export const POST = (async ({ request, locals }) => {

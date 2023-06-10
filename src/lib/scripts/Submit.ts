@@ -2,11 +2,11 @@ import { prisma } from "$lib/scripts/Database";
 
 export async function SubmitScore(wpm: number, locals: App.Locals) {
     try {
-        const user = await prisma.user.findFirst({
+        const user = await prisma.user.findUnique({
             where: { session: locals.session },
         });
         if (!user) return;
-        const previousScore = await prisma.score.findFirst({
+        const previousScore = await prisma.score.findUnique({
             where: {
                 userId: user.id,
             },
