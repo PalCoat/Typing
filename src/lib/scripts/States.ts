@@ -3,12 +3,10 @@ export enum State {
     Starting,
     Racing,
     Ending,
-    Ended,
 }
 
 export enum Command {
     Performance,
     Remove,
     Add,
-    State,
 }

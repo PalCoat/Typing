@@ -2,10 +2,10 @@ import type { PageServerLoad } from './$types';
 import { prisma } from "$lib/scripts/Database";
 
 export const load = (async () => {
-    const tests = await prisma.test.findMany({
+    const scores = await prisma.score.findMany({
         include: {
             user: true,
         }
     });
-    return { tests };
+    return { scores };
 }) satisfies PageServerLoad;

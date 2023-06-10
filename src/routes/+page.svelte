@@ -9,6 +9,7 @@
     let wordsPerMinute: number = 0;
     let lastWordsPerMinute: number = 0;
     let lastAccuracy: number = 0;
+
     onMount(() => {
         input.focus();
         ResetSentence();
@@ -23,13 +24,13 @@
 
     async function SubmitText() {
         if (sentence.length > word.length) return;
-        const WPS: number = WordsPerMinute();
-        lastWordsPerMinute = WPS;
+        const wpm: number = WordsPerMinute();
+        lastWordsPerMinute = wpm;
         lastAccuracy = Math.round(Accuracy() * 100);
 
         fetch("?/Submit", {
             method: "POST",
-            body: JSON.stringify({WPS: WPS}),
+            body: JSON.stringify({wpm}),
         }).then().catch()
         ResetSentence();
     }

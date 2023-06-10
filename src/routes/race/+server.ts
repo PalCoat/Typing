@@ -7,16 +7,21 @@ import { Sentence } from "$lib/scripts/Script";
 
 const sentenceLength = 10;
 let state: State = State.Waiting;
-let timeToStart: number = 0;
+let timeToStart: number = Date.now() + 15000;
 let timeToEnd: number = 0;
 let sentence: string = "";
 
 let racers : {name: string, wpm: number, progress: number}[] = [];
+let completers : {name: string, wpm: number, timeForComplete: number}[] = [];
 
 setInterval(() => {
-    TryStartingRace();
-    TryEndingRace();
+    TryStarting();
 }, 5000);
+
+setInterval(() => {
+    TryRacing();
+    TryWaiting();
+}, 500);
 
 
 export const GET: RequestHandler = async ({ locals }) => {
@@ -26,15 +31,15 @@ export const GET: RequestHandler = async ({ locals }) => {
 
     if (!user) throw redirect(302, "/signin");
 
+    //Maybe check if that user is already playing
+
     const stream = new ReadableStream({
         start(controller) {
-            console.log("Added " + user.name);
             streams[locals.session!] = {controller, name: user.name};
             AddRacer(locals.session);
             SendState(locals.session);
         },
         cancel() {
-            console.log("Removed " + user.name);
             const index = racers.findIndex((temp) => temp.name == streams[locals.session].name);
             racers.splice(index, 1);
             RemoveRacer(locals.session);
@@ -53,10 +58,30 @@ export const POST = (async ({ request, locals }) => {
     const data = await request.json();
     if (data.command == Command.Performance) {
         SendToEverySessionExcept(locals.session, {
+            command: Command.Performance,
             name: streams[locals.session!].name,
             wpm: data.wpm,
             progress: data.progress
         });
+    }
+    if (data.timeForComplete) {
+        SendToEverySessionExcept(locals.session, {
+            name: streams[locals.session!].name,
+            wpm: data.wpm,
+            timeForComplete: data.timeForComplete
+        });
+        if (completers.length < 1 && state == State.Racing) {
+            state = State.Ending;
+            timeToEnd = Date.now() + 15000;
+            
+            for (const sessionIteration in streams) {
+                SendToSession(sessionIteration, {
+                    state,
+                    timeUntilEnd: 15000,
+                    sentence,
+                });
+            }
+        }
     }
     return json(undefined);
 }) satisfies RequestHandler;
@@ -75,7 +100,8 @@ function SendState(session: string) {
             SendToSession(session, {
                 state,
                 timeUntilEnd: timeToEnd - Date.now(),
-                racers: WithoutRacer(session)
+                racers: WithoutRacer(session),
+                completers : WithoutCompleter(session)
             })
             break;
         }
@@ -93,43 +119,43 @@ function SendState(session: string) {
     }
 }
 
-function TryStartingRace() {
+function TryStarting() {
     if (racers.length < 2) return;
     if (state != State.Waiting) return;
 
-    console.log(racers);
     state = State.Starting;
-    sentence = Sentence(sentenceLength);
     timeToStart = Date.now() + 15000;
     for (const sessionIteration in streams) {
         if (sessionIteration) {
             SendToSession(sessionIteration, {
                 state,
                 timeUntilStart: 15000,
-                sentence,
                 racers: WithoutRacer(sessionIteration)
             });
         }
     }
 }
 
-function TryEndingRace() {
-    if (racers.length > 2) return;
-    if (state != State.Racing) return;
+function TryRacing() {
+    if (state != State.Starting) return;
+    if (Date.now() < timeToStart) return;
+
+    state = State.Racing;
+    sentence = Sentence(sentenceLength);
+    SendToEverySessionExcept("", {
+        state,
+        sentence
+    })
+}
+
+function TryWaiting() {
+    if (state != State.Ending) return;
+    if (Date.now() < timeToEnd) return;
 
     state = State.Waiting;
-    timeToEnd = Date.now() + 15000;
-    
-    for (const sessionIteration in streams) {
-        if (sessionIteration) {
-            SendToSession(sessionIteration, {
-                state,
-                timeUntilStart: 15000,
-                sentence,
-                racers: WithoutRacer(sessionIteration)
-            });
-        }
-    }
+    SendToEverySessionExcept("", {
+        state,
+    })
 }
 
 function AddRacer(session: string) {
@@ -142,20 +168,27 @@ function AddRacer(session: string) {
 }
 
 function RemoveRacer(session: string) {
-    const racer = {
+    SendToEverySessionExcept(session, {
         command: Command.Remove,
         name: streams[session!].name,
-    };
-    SendToEverySessionExcept(session, racer);
+    });
 }
 
 function WithoutRacer(session: string): {name: string, wpm: number, progress: number}[] {
-    let temp = racers;
     const index = racers.findIndex(({name}) => name == streams[session!].name);
-    if (index -1) return temp;
-    temp.splice(index, 1);
-    return temp;
+    if (index == -1) return racers;
+    const updatedRacers = racers.slice();
+    updatedRacers.splice(index, 1);
+    return updatedRacers;
 }
+
+    function WithoutCompleter(session: string): {name: string, wpm: number, timeForComplete: number}[] {
+        const index = completers.findIndex(({name}) => name == streams[session!].name);
+        if (index == -1) return completers;
+        const updatedCompleters = completers.slice();
+        updatedCompleters.splice(index, 1);
+        return updatedCompleters;
+    }
 
 const encoder = new TextEncoder();
 function SendToEverySessionExcept(session: string, message: any) {

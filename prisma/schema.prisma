@@ -8,18 +8,18 @@ datasource db {
 }
 
 model User {
-  id      Int      @id @default(autoincrement())
-  name    String   @unique
-  salt    String   @unique
-  session String   @unique
+  id      Int    @id @default(autoincrement())
+  name    String @unique
+  salt    String @unique
+  session String @unique
   hash    String
-  tests   Test[]
+  score   Score?
 }
 
-model Test {
-  id      Int      @id @default(autoincrement())
-  WPS     Int
-  date    DateTime
-  user    User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId  Int?
+model Score {
+  id     Int      @id @default(autoincrement())
+  wpm    Int
+  date   DateTime
+  user   User     @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  userId Int      @unique
 }
