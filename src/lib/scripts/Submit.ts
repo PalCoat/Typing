@@ -1,7 +1,7 @@
 import { prisma } from "$lib/scripts/Database";
 
-export class Submit {
-    async SubmitTest(wpm: number, locals: App.Locals) {
+export async function SubmitScore(wpm: number, locals: App.Locals) {
+    try {
         const user = await prisma.user.findFirst({
             where: { session: locals.session },
         });
@@ -31,5 +31,7 @@ export class Submit {
                 wpm,
             },
         });
+    } catch (error) {
+        console.log(error)
     }
 }
